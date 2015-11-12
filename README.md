@@ -1,5 +1,13 @@
 # Fuelcheck
 
+Primo esperimento di utilizzo di GitHub. Vediamo di partire con il piede giusto.
+
+## Installazione del virtualenv
+
+Per tener traccia dei package installati per l'applicazione, e per separarla da altre installazioni, utilizzeremo il
+`virtualenv`. In questo modo verra' creato un file `requirements.txt` che consente ad un altro utente di installarsi
+con un solo comando tutte le librerie necessarie.
+
 Attualmente siamo alla vesione 1.1.15; sono stati segnalati dei problemi durante la fase di rifornimento, per cui o la quantità di carburante immessa non coincide, o quando termina il rifornimento l'autista trova il tablet alla pagina principale e non può inserire i dati del rifornimento.
 
 I difetti non sono riproducibili in laboratorio. Sono state fatte delle analisi, che hanno portato alla scoperta di alcuni problemi nel codice:
