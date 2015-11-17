@@ -17,11 +17,11 @@ class BinaryProtocol(ControlUnit):
 	def encode(self, imei, driver, event, unixtime, sat, lat, lon, speed, gasoline_r, gasoline_l, gasoline_f, vin,
 				vbatt, input_gasoline_r, input_gasoline_l, input_gasoline_f, input_gasoline_tot, cup_r, cup_l, cup_f,
 				engine, alarm, cup_lock, distance_travelled):
-		"""Prende un pacchetto codificato, e lo spezza secondo le sue componenti"""
+		"""Prende una serie di variabili e ne crea un messaggio codificato in binario"""
 
 		#  Valori di un pacchetto dati standard
 		values = (
-			0x79,                    # LEN
+			0x79, 					 # LEN
 			0x02,                    # VER
 			35153,  50572, 49088,    # IMEI
 			0xFAFA,                  # DRVN
@@ -51,6 +51,6 @@ class BinaryProtocol(ControlUnit):
 		return packed_data
 
 	def decode(self, input_message):
-		"""Prende un messaggio codificato e lo spezza in tutte le sue parti"""
+		"""Prende un messaggio codificato in binario e ne ricava tutte le variabili"""
 
 		return True
