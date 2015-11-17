@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+# Questa classe rimane in ascolto su una porta, per messaggi codificati, li decomprime, li invia al MULE, riceve le
+# risposte e le restituisce alle centraline
+#
+#        +------+                   +------------+                   +------+
+#        | BBox |------------------>|     Me     |------------------>| MULE |
+#        |      |<------------------|            |<------------------|      |
+#        +------+                   +------------+                   +------+
+#
+
+
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 import struct
@@ -17,5 +27,6 @@ class BBoxDecoder(DatagramProtocol):
 		print("received {} from {}:{}".format(data, host, port))
 		self.transport.write("A50006", (host, port))
 
-reactor.listenUDP(9123, BBoxDecoder())
-reactor.run()
+if __name__ == '__main__':
+	reactor.listenUDP(9123, BBoxDecoder())
+	reactor.run()

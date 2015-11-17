@@ -191,9 +191,9 @@ sono le seguenti:
 
 '''
 
-    +------------------------------- Little endian
-    |+------------------------------ LEN               (    1 byte  - B  )
- 	||+----------------------------- RSP               (    1 byte  - B  )
+    +-------------------------- Little endian
+    |+------------------------- LEN               (    1 byte  - B  )
+ 	||+------------------------ RSP               (    1 byte  - B  )
     |||
 	<BB
 
@@ -203,10 +203,10 @@ sono le seguenti:
 
 '''
 
-    +------------------------------- Little endian
-    |+------------------------------ LEN               (    1 byte  - B  )
- 	||+----------------------------- RSP               (    1 byte  - B  )
-	|||+---------------------------- OEFL              (    1 byte  - B  )
+    +-------------------------- Little endian
+    |+------------------------- LEN               (    1 byte  - B  )
+ 	||+------------------------ RSP               (    1 byte  - B  )
+	|||+----------------------- OEFL              (    1 byte  - B  )
     ||||
 	<BBB
 
@@ -218,11 +218,11 @@ Valido se ONDT è compreso tra 1 e 6.
 
 '''
 
-    +------------------------------- Little endian
-    |+------------------------------ LEN               (    1 byte  - B  )
- 	||+----------------------------- RSP               (    1 byte  - B  )
-	|||+---------------------------- ONDT              (    1 byte  - B  )
-    ||||+--------------------------- OPLD              (    4 byte  - f  )
+    +-------------------------- Little endian
+    |+------------------------- LEN               (    1 byte  - B  )
+ 	||+------------------------ RSP               (    1 byte  - B  )
+	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||||+---------------------- OPLD              (    4 byte  - f  )
     |||||
 	<BBBf
 
@@ -234,12 +234,12 @@ Valido se ONDT è pari a 7.
 
 '''
 
-    +------------------------------- Little endian
-    |+------------------------------ LEN               (    1 byte  - B  )
- 	||+----------------------------- RSP               (    1 byte  - B  )
-	|||+---------------------------- ONDT              (    1 byte  - B  )
-    ||||+--------------------------- num               (    2 byte  - H  )
-    |||||+-------------------------- name              (    ? bytes - s  )
+    +-------------------------- Little endian
+    |+------------------------- LEN               (    1 byte  - B  )
+ 	||+------------------------ RSP               (    1 byte  - B  )
+	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||||+---------------------- num               (    2 byte  - H  )
+    |||||+--------------------- name              (    ? bytes - s  )
 	||||||
 	<BBBHs
 
@@ -251,11 +251,11 @@ Valido se ONDT è compreso tra 8 e 12.
 
 '''
 
-    +------------------------------- Little endian
-    |+------------------------------ LEN               (    1 byte  - B  )
- 	||+----------------------------- RSP               (    1 byte  - B  )
-	|||+---------------------------- ONDT              (    1 byte  - B  )
-    ||||+--------------------------- CODE or CARB      (    4 byte  - L  )
+    +-------------------------- Little endian
+    |+------------------------- LEN               (    1 byte  - B  )
+ 	||+------------------------ RSP               (    1 byte  - B  )
+	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||||+---------------------- CODE or CARB      (    4 byte  - L  )
 	|||||
 	<BBBL
 
@@ -267,45 +267,49 @@ Valido se ONDT è pari a 13.
 
 '''
 
-    +------------------------------- Little endian
-    |+------------------------------ LEN               (    1 byte  - B  )
- 	||+----------------------------- RSP               (    1 byte  - B  )
-	|||+---------------------------- ONDT              (    1 byte  - B  )
-    ||||+--------------------------- MSG               (    ? byte  - s  )
+    +-------------------------- Little endian
+    |+------------------------- LEN               (    1 byte  - B  )
+ 	||+------------------------ RSP               (    1 byte  - B  )
+	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||||+---------------------- MSG               (    ? byte  - s  )
 	|||||
 	<BBBs
 
 '''
 
-# Decimal degree
+# Precisione in gradi rispetto ai punti decimali
 
-  Degree precision versus length
-decimal  decimal  DMS	qualitative scale that can be identified	N/S or          E/W at    E/W at   E/W at
-places   degrees                                                  E/W at equator    23N/S     45N/S    67N/S
-0	1.0	1° 00′ 0″	country or large region	111.32 km	102.47 km	78.71 km	43.496 km
-1	0.1	0° 06′ 0″	large city or district	11.132 km	10.247 km	7.871 km	4.3496 km
-2	0.01	0° 00′ 36″	town or village	1.1132 km	1.0247 km	787.1 m	434.96 m
-3	0.001	0° 00′ 3.6″	neighborhood, street	111.32 m	102.47 m	78.71 m	43.496 m
-4	0.0001	0° 00′ 0.36″	individual street, land parcel	11.132 m	10.247 m	7.871 m	4.3496 m
-5	0.00001	0° 00′ 0.036″	individual trees	1.1132 m	1.0247 m	787.1 mm	434.96 mm
-6	0.000001	0° 00′ 0.0036″	individual humans	111.32 mm	102.47 mm	78.71 mm	43.496 mm
-7	0.0000001	0° 00′ 0.00036″	practical limit of commercial surveying	11.132 mm	10.247 mm	7.871 mm	4.3496 mm
-8	0.00000001	0° 00′ 0.000036″	specialized surveying (e.g. tectonic plate mapping)	1.1132 mm	1.0247 mm	787.1 µm	434.96 µm
+Per determinare la precisione in gradi o metri a partire dalla precisione dell'angolo di Latitudine o Longitudine,
+basta seguire la seguente tabella:
 
-Single precision (float) gives you 23 bits of significand, 8 bits of exponent, and 1 sign bit.
-0.0000001 = 10mm
+    decimal | decimal    |    DMS           | Qualitative scale that  |  N/S-E/W   |   E/W at  |  E/W at  |  E/W at
+    places  | degrees    |                  |   can be identified     | at equator |   23N/S   |  45N/S   |  67N/S
+   ---------+------------+------------------+-------------------------+------------+-----------+----------+----------
+      0     | 1.0        | 1° 00' 0"        | country or large region | 111.32 km  | 102.47 km | 78.71 km | 43.496 km
+      1     | 0.1        | 0° 06' 0"        | large city or district  | 11.132 km  | 10.247 km | 7.871 km | 4.3496 km
+      2     | 0.01       | 0° 00' 36"       | town or village         | 1.1132 km  | 1.0247 km | 787.1 m  | 434.96 m
+      3     | 0.001      | 0° 00' 3.6"      | neighborhood, street    | 111.32 m   | 102.47 m  | 78.71 m  | 43.496 m
+      4     | 0.0001     | 0° 00' 0.36"     | individual street       | 11.132 m   | 10.247 m  | 7.871 m  | 4.3496 m
+      5     | 0.00001    | 0° 00' 0.036"    | individual trees        | 1.1132 m   | 1.0247 m  | 787.1 mm | 434.96 mm
+      6     | 0.000001   | 0° 00' 0.0036"   | individual humans       | 111.32 mm  | 102.47 mm | 78.71 mm | 43.496 mm
+      7     | 0.0000001  | 0° 00' 0.00036"  | commercial surveying    | 11.132 mm  | 10.247 mm | 7.871 mm | 4.3496 mm
+      8     | 0.00000001 | 0° 00' 0.000036" | specialized surveying   | 1.1132 mm  | 1.0247 mm | 787.1 µm | 434.96 µm
 
-Double precision (double) gives you 52 bits of significand, 11 bits of exponent, and 1 sign bit.
-0.000000000000001 = um
+La precisione dei tipi di dati float e double, partendo dalla loro definizione IEEE 754, è la seguente:
 
+  * Single precision (float) gives you 23 bits of significand, 8 bits of exponent, and 1 sign bit (0.0000001 = 10mm)
+  * Double precision (double) gives you 52 bits of significand, 11 bits of exponent, and 1 sign bit (0.000000000000001 = um)
 
-Type	             Sign	Exponent	Significand field	Total bits		Exponent bias	Bits precision	Number of decimal digits
-Half (IEEE 754-2008)	1	5	10	16		15	11	~3.3
-Single	                1	8	23	32		127	24	~7.2
-Double	                1	11	52	64		1023	53	~15.9
-x86 extended precision	1	15	64	80		16383	64	~19.2
-Quad	1	15	112	128		16383	113	~34.0
+Il seguente schema indica la precisione e la codifica di alcuni formati comunemente usati:
 
+             Type          | Sign | Exponent | Significand | Total | Exponent | Bits      | Number of
+                           |      |          |    field    | bits  |   bias   | precision | decimal digits
+    -----------------------+------+----------+-------------+-------+----------+-----------+-----------------
+    Half (IEEE 754-2008)   | 1    |    5     |     10      |  16   |    15    |    11     | ~3.3
+    Single	               | 1    |    8     |     23      |  32   |   127    |    24     | ~7.2
+    Double	               | 1    |   11     |     52      |  64   |  1023    |    53     | ~15.9
+    x86 extended precision | 1    |   15     |     64      |  80   | 16383    |    64     | ~19.2
+    Quad                   | 1    |   15     |    112      | 128   | 16383    |   113     | ~34.0
 
 # Referenze
 

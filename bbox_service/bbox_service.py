@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 
+# Questa classe al momento riceve in ingresso come parametro a linea di comando una stringa codificata secondo l'attuale
+# protocollo, la comprime, la invia al server.
+
+#  Referenze
+# Unittest - https://twistedmatrix.com/documents/current/core/howto/trial.html
+# Opensourcing in the right way - https://www.jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-right-way/
+
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 import struct
 import binascii
-
 
 class BBox():
 	def __init__(self):
@@ -69,7 +75,7 @@ class BBoxDatagramProtocol(DatagramProtocol):
 
 		else:
 
-			#  Lind  Lins  Linf  In    Out   Km
+			#  Valori di un pacchetto dati standard
 			values = (
 				0x79,                    # LEN
 				0x02,                    # VER
@@ -116,10 +122,6 @@ class BBoxDatagramProtocol(DatagramProtocol):
 		self.sendDatagram()
 
 
-def main():
-	protocol = BBoxDatagramProtocol()
-	reactor.listenUDP(0, protocol)
-	reactor.run()
-
 if __name__ == '__main__':
-	main()
+	reactor.listenUDP(0, BBoxDatagramProtocol())
+	reactor.run()
