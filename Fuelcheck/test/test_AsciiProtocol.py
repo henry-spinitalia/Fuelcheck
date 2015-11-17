@@ -6,13 +6,39 @@ import unittest
 class TestAsciiProtocol(unittest.TestCase):
 
 	def test_encode(self):
+
 		aproto = AsciiProtocol()
-		result = aproto.encode("351535057252702", 1121, 7, 1447501929, 11, 41.694336, 12.599915, 11.2, 200.1, 300.2,
-								400.3, 25.8, 4.26, 500.2, 600.3, 700.4, 8888, aproto.CUP_CLOSE, aproto.CUP_OPEN,
-								aproto.CUP_CLOSE, aproto.ENGINE_ON, aproto.ALARM_UNARMED, aproto.CAPS_UNLOCKED,
-								36.5)
-		self.assertEqual(result, "A57901351535057252702112107201511141152091141416602N012359949E0112200130024003258"
-									"42650026003700488880101UUUU00UUUUUU03651")
+
+		aproto.imei = "351535057252702"
+		aproto.driver = 1121
+		aproto.event = 7
+		aproto.unixtime = 1447501929
+		aproto.sat = 11
+		aproto.lat = 41.694336
+		aproto.lon = 12.599915
+		aproto.speed = 11.2
+		aproto.gasoline_r = 200.1
+		aproto.gasoline_l = 300.2
+		aproto.gasoline_f = 400.3
+		aproto.vin = 25.8
+		aproto.vbatt = 4.26
+		aproto.input_gasoline_r = 500.2
+		aproto.input_gasoline_l = 600.3
+		aproto.input_gasoline_f = 700.4
+		aproto.input_gasoline_tot = 8888
+		aproto.cup_r = AsciiProtocol.CUP_CLOSE
+		aproto.cup_l = AsciiProtocol.CUP_OPEN
+		aproto.cup_f = AsciiProtocol.CUP_CLOSE
+		aproto.engine = AsciiProtocol.ENGINE_ON
+		aproto.alarm = AsciiProtocol.ALARM_UNARMED
+		aproto.cup_lock = AsciiProtocol.CAPS_UNLOCKED
+		aproto.distance_travelled = 365.1
+
+		result = aproto.encode()
+
+		self.assertEqual(result, True)
+		self.assertEqual(aproto.output_packet, "A57901351535057252702112107201511141152091141416602N012359949E"
+											   "011220013002400325842650026003700488880101UUUU00UUUUUU03651")
 
 	def test_decode(self):
 		aproto = AsciiProtocol()
@@ -44,16 +70,16 @@ class TestAsciiProtocol(unittest.TestCase):
 		self.assertEqual(aproto.input_gasoline_l, 600.3)
 		self.assertEqual(aproto.input_gasoline_f, 700.4)
 		self.assertEqual(aproto.input_gasoline_tot, 8888)
-		self.assertEqual(aproto.cup_r, aproto.CUP_CLOSE)
-		self.assertEqual(aproto.cup_l, aproto.CUP_OPEN)
-		self.assertEqual(aproto.cup_f, aproto.CUP_CLOSE)
-		self.assertEqual(aproto.engine, aproto.ENGINE_ON)
+		self.assertEqual(aproto.cup_r, AsciiProtocol.CUP_CLOSE)
+		self.assertEqual(aproto.cup_l, AsciiProtocol.CUP_OPEN)
+		self.assertEqual(aproto.cup_f, AsciiProtocol.CUP_CLOSE)
+		self.assertEqual(aproto.engine, AsciiProtocol.ENGINE_ON)
 		self.assertEqual(aproto.unused_inputs, "UUUU")
-		self.assertEqual(aproto.alarm, aproto.ALARM_UNARMED)
-		self.assertEqual(aproto.cup_lock, aproto.CAPS_UNLOCKED)
+		self.assertEqual(aproto.alarm, AsciiProtocol.ALARM_UNARMED)
+		self.assertEqual(aproto.cup_lock, AsciiProtocol.CAPS_UNLOCKED)
 		self.assertEqual(aproto.unused_outputs, "UUUUUU")
-		self.assertEqual(aproto.distance_travelled, 36.5)
+		self.assertEqual(aproto.distance_travelled, 365.1)
 
 if __name__ == '__main__':
 
-    unittest.main()
+	unittest.main()
