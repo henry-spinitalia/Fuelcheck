@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 from Fuelcheck.AsciiProtocol import AsciiProtocol
-#from twisted.trial import unittest
+# from twisted.trial import unittest
 import unittest
 
 
@@ -37,13 +39,20 @@ class TestAsciiProtocol(unittest.TestCase):
 		result = aproto.encode()
 
 		self.assertEqual(result, True)
-		self.assertEqual(aproto.output_packet, "A57901351535057252702112107201511141152091141416602N012359949E"
-											   "011220013002400325842650026003700488880101UUUU00UUUUUU03651")
+		self.assertEqual(
+			aproto.output_packet,
+			"A57901351535057252702112107201511141152091141416602N012359949E011220013002400325842650026003700488880101"
+			"UUUU00UUUUUU03651"
+		)
 
 	def test_decode(self):
+
 		aproto = AsciiProtocol()
-		result = aproto.decode("A57901351535057252702112107201511141152091141416602N012359949E0112200130024003258"
-								"42650026003700488880101UUUU00UUUUUU03651")
+		result = aproto.decode(
+			"A57901351535057252702112107201511141152091141416602N012359949E011220013002400325842650026003700488880101"
+			"UUUU00UUUUUU03651"
+		)
+
 		self.assertEqual(result, True)
 		self.assertEqual(aproto.header, "A5")
 		self.assertEqual(aproto.len, 121)
@@ -80,6 +89,6 @@ class TestAsciiProtocol(unittest.TestCase):
 		self.assertEqual(aproto.unused_outputs, "UUUUUU")
 		self.assertEqual(aproto.distance_travelled, 365.1)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
 	unittest.main()

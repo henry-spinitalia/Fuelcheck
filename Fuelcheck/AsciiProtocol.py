@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-# -*- test-case-name: Fuelcheck.test.test_AsciiProtocol -*-
 from ControlUnit import ControlUnit
 import time
 import math
 
 class AsciiProtocol(ControlUnit):
-	"""Classe per la codifica e decodifica del protocollo ASCII attualmente implementato
-	"""
+	"""Classe per la codifica e decodifica del protocollo ASCII attualmente implementato"""
 
 	def __init__(self):
 
@@ -16,10 +14,10 @@ class AsciiProtocol(ControlUnit):
 		"""Prende una serie di variabili e ne crea un messaggio codificato in ASCII"""
 
 		# Bisogna controllare tutti i parametri in ingresso
-		if len(self.imei) != 15:
-			return False
-		if self.input_gasoline_r < 0.0 and self.input_gasoline_r > 999.9:
-			return False
+		try:
+			self.check_values()
+		except:
+			raise
 
 		# Converto la data in struct_time UTC
 		s_time = time.gmtime(self.unixtime)
