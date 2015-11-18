@@ -91,4 +91,10 @@ class BinaryProtocol(ControlUnit):
 	def decode(self, input_message):
 		"""Prende un messaggio codificato in binario e ne ricava tutte le variabili"""
 
+		# Per prima cosa usi unpack per trasformare il messaggio binario in una tupla di valori
+
+		# Poi assegni i vari elementi della tupla, agli attributi della classe BinaryProtocol ereditati dal padre ControlUnit
+
+		# Infine controlli che tutti i valori siano entro i limiti, ed nel caso generi la stessa eccezione della funzione di controllo
+
 		return True
