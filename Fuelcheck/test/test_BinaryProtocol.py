@@ -42,7 +42,7 @@ class TestBinaryProtocol(unittest.TestCase):
 		self.assertEqual(
 			bproto.output_packet,
 			binascii.unhexlify(
-				"790251898CC5DECD610407692047560B00C72642409949410B00C8002C01900119000400F4015802BC02B82250006D01"
+				'300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
 			)
 		)
 
@@ -50,9 +50,25 @@ class TestBinaryProtocol(unittest.TestCase):
 
 		bproto = BinaryProtocol()
 
+		# Controllo la lunghezza errata
+		with self.assertRaises(ValueError):
+			bproto.decode(
+				binascii.unhexlify(
+					'300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430EAA'
+				)
+			)
+
+		with self.assertRaises(ValueError):
+			bproto.decode(
+				binascii.unhexlify(
+					'200251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+				)
+			)
+
+		# Ora controllo la traduzione
 		result = bproto.decode(
 			binascii.unhexlify(
-				"790251898CC5DECD610407692047560B00C72642409949410B00C8002C01900119000400F4015802BC02B82250006D01"
+				'300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
 			)
 		)
 
@@ -61,8 +77,8 @@ class TestBinaryProtocol(unittest.TestCase):
 		self.assertEqual(bproto.event, 7)
 		self.assertEqual(bproto.unixtime, 1447501929)
 		self.assertEqual(bproto.sat, 11)
-		self.assertEqual(bproto.lat, 41.694336)
-		self.assertEqual(bproto.lon, 12.599915)
+		self.assertAlmostEqual(bproto.lat, 41.694336, 6)
+		self.assertAlmostEqual(bproto.lon, 12.599915, 6)
 		self.assertEqual(bproto.speed, 11.2)
 		self.assertEqual(bproto.gasoline_r, 200.1)
 		self.assertEqual(bproto.gasoline_l, 300.2)
