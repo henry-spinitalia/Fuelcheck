@@ -82,5 +82,14 @@ class AsciiProtocol(ControlUnit):
 		if input_message[0:2] != "A5":
 			raise ValueError("Campo header errato ({:02X} != A5)".format(input_message[0:2]))
 
+				#Controllo la lunghezza del pacchetto
+		if len(input_message) != 121:
+			raise ValueError("Campo lunghezza stringa errato")
+
+
 		return True
+
+
+
+
 
