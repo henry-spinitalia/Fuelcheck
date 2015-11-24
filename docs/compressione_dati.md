@@ -12,92 +12,92 @@ Il primo carattere indica se presente l'ordine dei bytes come little-endian, tra
 
 Poi vengono specificate le codifiche dei campi, tra le possibili del python, tramite un singolo carattere di formato:
 
-	 Format  | C Type         | Python type         | Standard size
+     Format  | C Type         | Python type         | Standard size
   -----------|----------------|---------------------|---------------
-	    x    | pad byte       | no value            |
-		c    | char           | string of length 1  | 1
-		b    | signed char    | integer             | 1
-		B    | unsigned char  | integer             | 1
-		?    | _Bool          | bool                | 1
-		h    | short          | integer	            | 2
-		H    | unsigned short | integer             | 2
-		i    | int            | integer             | 4
-		I    | unsigned int   | integer             | 4
-		l    | long           | integer             | 4
-		L    | unsigned       | long integer        | 4
-		q    | long long      | integer             | 8
-		Q    | unsigned long  | long integer        | 8
-		f    | float          | float               | 4
-		d    | double         | float               | 8
-		s    | char[]         | string              |
-		p    | char[]         | string              |
-		P    | void *         | integer             |
+        x    | pad byte       | no value            |
+        c    | char           | string of length 1  | 1
+        b    | signed char    | integer             | 1
+        B    | unsigned char  | integer             | 1
+        ?    | _Bool          | bool                | 1
+        h    | short          | integer	            | 2
+        H    | unsigned short | integer             | 2
+        i    | int            | integer             | 4
+        I    | unsigned int   | integer             | 4
+        l    | long           | integer             | 4
+        L    | unsigned       | long integer        | 4
+        q    | long long      | integer             | 8
+        Q    | unsigned long  | long integer        | 8
+        f    | float          | float               | 4
+        d    | double         | float               | 8
+        s    | char[]         | string              |
+        p    | char[]         | string              |
+        P    | void *         | integer             |
 
 # Formato della struttura dati
 
 I dati andranno codificati in una struttura al fine di diminuirne il peso. Premesso il documento originale che elenca
 il protocollo finora utilizzato, vengono applicate le seguenti considerazioni:
 
-	* La dimensione minima di un pacchetto non frammentato su internet è di 576bytes. A questi vanno sottratti l'header
-	  IP che puo' raggiungere 60 bytes. Questo è particolarmente importante per l'UDP, al fine di non dover riordinare
-	  i pacchetti in ingresso.
-	* Il campo HDR, che ha un valore fisso pari a A5, non ha motivo di esistere, e viene eliminato.
-	* La lunghezza LEN è un controllo, e al momento va bene che sia al massimo di 1 byte (1 byte - B)
-	* La versione VER al momento non è molto utilizzato, ma servirà per differenziare il tipo di informazioni inviate;
-	  anche questo campo va bene che sia lungo un byte senza segno (1 byte - B)
-	* L'IMEI viene comunemente spezzato in tre interi senza segno da 2 bytes (0-65535), quindi 353681048805535 diventa
-	  35368, 10488, 05535 (6 bytes - HHH)
-	* Il numero di autisti DRVN massimo è di 9999, quindi anche questo diventa un intero senza segno a 2 bytes
-	  (2 bytes - H)
-	* Il codice dell'evento EVTN è un byte senza segno. Al momento non tutti i pacchetti contengono le stesse
-	  informazioni. Possiamo in futuro migliorare inviando per ciascun evento solo le informazioni cambiate o quelle di
-	  interesse per l'evento stesso (1 byte - B).
-	* Per la data dei campi DATE e TIME, conviene trasmettere lo UNIXTIME in UTC, ovvero i secondi dal 1 gennaio 1970,
-	  in UTC. Per noi basta un intero senza segno da 4 bytes ( 4 bytes - I )
-	* Il numero dei satelliti GSAT, al momento è un byte senza segno (1 byte - B)
-	* Il campo LAT lo memorizziamo come float a 4byte, con una precisione di 10mm, vedi appendice A (4 bytes - f)
-	* Il campo LON lo memorizziamo come float a 4byte, con una precisione di 10mm, vedi appendice A (4 bytes - f)
-	* La velocità SPD, la rappresentiamo moltiplicata per 10, e salvata in due bytes senza segno (2 bytes - H)
-	* I campi che indicano i litri presenti nei serbatoi, FTR, FTL, FTF, vengono moltiplicati per 10 e salvati in 2
-	  bytes senza segno ciascuno (6 bytes - HHH)
-	* Le tensione del mezzo MBAT, è moltiplicata per 10, e salvata in due bytes senza segno ciascuna (2 bytes - HH)
-	* Le tensione della batteria interna BBAT, è moltiplicate per 100, e salvata in due bytes senza segno ciascuna
-	  (2 bytes - HH)
-	* I litri immessi nei serbatoi, FCRM, FCLM, FCFM, vengono moltiplicati per 10 e salvati in 2 bytes senza segno
-	  ciascuno (6 bytes - HHH)
-	* I litri di carburante immesso dichiarati, sono salvati come interi in 2 bytes senza segno (2 bytes - HH)
-	* Lo stato degli ingressi viene rappresentato con un byte, codificato a bit (1 byte - B). Ogni ingresso occupa due
-	  bit, il primo è lo stato 0-1, il secondo l'eventuale Fail.
-	* Lo stato delle uscite viene rappresentato con un byte, codificato a bit (1 byte - B)
-	* La distanza percorsa HSZZ, la rappresentiamo moltiplicata per 10, e salvata in due bytes senza segno (2 bytes - H)
-	* Se il messaggio è un rifornimento (EVTN = 13), allora viene accodato DIST, un byte che indica il distributore
-	  (1 byte - B)
-	* Se viene inviato un messaggio di testo (EVTN = 14), viene accodato il messaggio come stringa di lunghezza
-	  variabile terminata con $. La rappresentiamo come stringa (? bytes - s).
+    * La dimensione minima di un pacchetto non frammentato su internet è di 576bytes. A questi vanno sottratti l'header
+      IP che puo' raggiungere 60 bytes. Questo è particolarmente importante per l'UDP, al fine di non dover riordinare
+      i pacchetti in ingresso.
+    * Il campo HDR, che ha un valore fisso pari a A5, non ha motivo di esistere, e viene eliminato.
+    * La lunghezza LEN è un controllo, e al momento va bene che sia al massimo di 1 byte (1 byte - B)
+    * La versione VER al momento non è molto utilizzato, ma servirà per differenziare il tipo di informazioni inviate;
+      anche questo campo va bene che sia lungo un byte senza segno (1 byte - B)
+    * L'IMEI viene comunemente spezzato in tre interi senza segno da 2 bytes (0-65535), quindi 353681048805535 diventa
+      35368, 10488, 05535 (6 bytes - HHH)
+    * Il numero di autisti DRVN massimo è di 9999, quindi anche questo diventa un intero senza segno a 2 bytes
+      (2 bytes - H)
+    * Il codice dell'evento EVTN è un byte senza segno. Al momento non tutti i pacchetti contengono le stesse
+      informazioni. Possiamo in futuro migliorare inviando per ciascun evento solo le informazioni cambiate o quelle di
+      interesse per l'evento stesso (1 byte - B).
+    * Per la data dei campi DATE e TIME, conviene trasmettere lo UNIXTIME in UTC, ovvero i secondi dal 1 gennaio 1970,
+      in UTC. Per noi basta un intero senza segno da 4 bytes ( 4 bytes - I )
+    * Il numero dei satelliti GSAT, al momento è un byte senza segno (1 byte - B)
+    * Il campo LAT lo memorizziamo come float a 4byte, con una precisione di 10mm, vedi appendice A (4 bytes - f)
+    * Il campo LON lo memorizziamo come float a 4byte, con una precisione di 10mm, vedi appendice A (4 bytes - f)
+    * La velocità SPD, la rappresentiamo moltiplicata per 10, e salvata in due bytes senza segno (2 bytes - H)
+    * I campi che indicano i litri presenti nei serbatoi, FTR, FTL, FTF, vengono moltiplicati per 10 e salvati in 2
+      bytes senza segno ciascuno (6 bytes - HHH)
+    * Le tensione del mezzo MBAT, è moltiplicata per 10, e salvata in due bytes senza segno ciascuna (2 bytes - HH)
+    * Le tensione della batteria interna BBAT, è moltiplicate per 100, e salvata in due bytes senza segno ciascuna
+      (2 bytes - HH)
+    * I litri immessi nei serbatoi, FCRM, FCLM, FCFM, vengono moltiplicati per 10 e salvati in 2 bytes senza segno
+      ciascuno (6 bytes - HHH)
+    * I litri di carburante immesso dichiarati, sono salvati come interi in 2 bytes senza segno (2 bytes - HH)
+    * Lo stato degli ingressi viene rappresentato con un byte, codificato a bit (1 byte - B). Ogni ingresso occupa due
+      bit, il primo è lo stato 0-1, il secondo l'eventuale Fail.
+    * Lo stato delle uscite viene rappresentato con un byte, codificato a bit (1 byte - B)
+    * La distanza percorsa HSZZ, la rappresentiamo moltiplicata per 10, e salvata in due bytes senza segno (2 bytes - H)
+    * Se il messaggio è un rifornimento (EVTN = 13), allora viene accodato DIST, un byte che indica il distributore
+      (1 byte - B)
+    * Se viene inviato un messaggio di testo (EVTN = 14), viene accodato il messaggio come stringa di lunghezza
+      variabile terminata con $. La rappresentiamo come stringa (? bytes - s).
 
 In risposta all'invio dell'evento, il MULE-ESB ci comunica l'avventa ricezione, ci segnala un errore nel formato dei
 dati inviati, oppure ci aggiunge altre informazioni. Le nostre note circa la risposta che andrà anch'essa compressa
 sono le seguenti:
 
-	* Il campo HDR che è fisso non serve quindi lo eliminiamo.
-	* Il campo LEN è un controllo, e al momento va bene che sia al massimo di 1 byte (1 byte - B)
-	* Il campo di risposta RSP è lungo 1 byte (1 byte - B)
-	* Il campo opzionale che indica dove è stato riscontrato un errore nei dati inviati OEFL è lungo 1 byte (1 byte - B)
-	* Il campo opzionale che descrive le informazioni accodate ONDT è lungo 1 byte (1 byte - B)
-	* Il campo opzionale contente le informazioni aggiuntive OPLD dipende dal tipo di informazioni inviate
-	  * Se si tratta del fattore di conversione Litri/Volt del serbatoio sinistro (ONDT=1), è un float (4 bytes - f)
-	  * Se si tratta del fattore di conversione Litri/Volt del serbatoio destro (ONDT=2), è un float (4 bytes - f)
-	  * Se si tratta del fattore di conversione Litri/Volt del serbatoio frigo (ONDT=3), è un float (4 bytes - f)
-	  * Se si tratta del fattore di conversione Impulsi/Litro del serbatoio sinistro (ONDT=4), è un float (4 bytes - f)
-	  * Se si tratta del fattore di conversione Impulsi/Litro del serbatoio destro (ONDT=5), è un float (4 bytes - f)
-	  * Se si tratta del fattore di conversione Impulsi/Litro del serbatoio frigo (ONDT=6), è un float (4 bytes - f)
-	  * Se si tratta del nome dell'autista (ONDT=7), è un intero senza segno ed una stringa (2+? bytes - Hs)
-	  * Se si tratta di un codice antifurto (ONDT=8), è un long senza segno (4 bytes - L)
-	  * Se si tratta di un codice manutentore (ONDT=9), è un long senza segno (4 bytes - L)
-	  * Se si tratta di un codice amministratore (ONDT=10), è un long senza segno (4 bytes - L)
-	  * Se si tratta di un codice pin (ONDT=11), è un long senza segno (4 bytes - L)
-	  * Se si tratta della quantità di carburante presente in sede (ONDT=12), è un long senza segno (4 bytes - L)
-	  * Se si tratta di un messaggio di risposta alla chat (ONDT=13), è una stringa (? bytes - s)
+    * Il campo HDR che è fisso non serve quindi lo eliminiamo.
+    * Il campo LEN è un controllo, e al momento va bene che sia al massimo di 1 byte (1 byte - B)
+    * Il campo di risposta RSP è lungo 1 byte (1 byte - B)
+    * Il campo opzionale che indica dove è stato riscontrato un errore nei dati inviati OEFL è lungo 1 byte (1 byte - B)
+    * Il campo opzionale che descrive le informazioni accodate ONDT è lungo 1 byte (1 byte - B)
+    * Il campo opzionale contente le informazioni aggiuntive OPLD dipende dal tipo di informazioni inviate
+      * Se si tratta del fattore di conversione Litri/Volt del serbatoio sinistro (ONDT=1), è un float (4 bytes - f)
+      * Se si tratta del fattore di conversione Litri/Volt del serbatoio destro (ONDT=2), è un float (4 bytes - f)
+      * Se si tratta del fattore di conversione Litri/Volt del serbatoio frigo (ONDT=3), è un float (4 bytes - f)
+      * Se si tratta del fattore di conversione Impulsi/Litro del serbatoio sinistro (ONDT=4), è un float (4 bytes - f)
+      * Se si tratta del fattore di conversione Impulsi/Litro del serbatoio destro (ONDT=5), è un float (4 bytes - f)
+      * Se si tratta del fattore di conversione Impulsi/Litro del serbatoio frigo (ONDT=6), è un float (4 bytes - f)
+      * Se si tratta del nome dell'autista (ONDT=7), è un intero senza segno ed una stringa (2+? bytes - Hs)
+      * Se si tratta di un codice antifurto (ONDT=8), è un long senza segno (4 bytes - L)
+      * Se si tratta di un codice manutentore (ONDT=9), è un long senza segno (4 bytes - L)
+      * Se si tratta di un codice amministratore (ONDT=10), è un long senza segno (4 bytes - L)
+      * Se si tratta di un codice pin (ONDT=11), è un long senza segno (4 bytes - L)
+      * Se si tratta della quantità di carburante presente in sede (ONDT=12), è un long senza segno (4 bytes - L)
+      * Se si tratta di un messaggio di risposta alla chat (ONDT=13), è una stringa (? bytes - s)
 
 # Codifica dei pacchetti
 
@@ -107,25 +107,25 @@ sono le seguenti:
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ VER               (    1 byte  - B  )
-	|||+++--------------------- IMEI              (3 x 2 bytes - HHH)
-	||||||+-------------------- DRVN              (    2 bytes - H  )
-	|||||||+------------------- EVTN              (    1 byte  - B  )
-	||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
-	|||||||||+----------------- GSAT              (    1 byte  - B  )
-	||||||||||+---------------- LAT               (    4 bytes - f  )
-	|||||||||||+--------------- LON               (    4 bytes - f  )
-	||||||||||||+-------------- SPD               (    2 bytes - H  )
-	|||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
-	||||||||||||||||+---------- MBAT              (    2 bytes - H  )
-	|||||||||||||||||+--------- BBAT              (    2 bytes - H  )
-	||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
-	|||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
-	||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
-	|||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
-	||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
-	|||||||||||||||||||||||||
-	<BBHHHHBIBffHHHHHHHHHHBBH
+    ||+------------------------ VER               (    1 byte  - B  )
+    |||+++--------------------- IMEI              (3 x 2 bytes - HHH)
+    ||||||+-------------------- DRVN              (    2 bytes - H  )
+    |||||||+------------------- EVTN              (    1 byte  - B  )
+    ||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
+    |||||||||+----------------- GSAT              (    1 byte  - B  )
+    ||||||||||+---------------- LAT               (    4 bytes - f  )
+    |||||||||||+--------------- LON               (    4 bytes - f  )
+    ||||||||||||+-------------- SPD               (    2 bytes - H  )
+    |||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
+    ||||||||||||||||+---------- MBAT              (    2 bytes - H  )
+    |||||||||||||||||+--------- BBAT              (    2 bytes - H  )
+    ||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
+    |||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
+    ||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
+    |||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
+    ||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
+    |||||||||||||||||||||||||
+    <BBHHHHBIBffHHHHHHHHHHBBH
 
 '''
 
@@ -135,26 +135,26 @@ sono le seguenti:
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ VER               (    1 byte  - B  )
-	|||+++--------------------- IMEI              (3 x 2 bytes - HHH)
-	||||||+-------------------- DRVN              (    2 bytes - H  )
-	|||||||+------------------- EVTN              (    1 byte  - B  )
-	||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
-	|||||||||+----------------- GSAT              (    1 byte  - B  )
-	||||||||||+---------------- LAT               (    4 bytes - f  )
-	|||||||||||+--------------- LON               (    4 bytes - f  )
-	||||||||||||+-------------- SPD               (    2 bytes - H  )
-	|||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
-	||||||||||||||||+---------- MBAT              (    2 bytes - H  )
-	|||||||||||||||||+--------- BBAT              (    2 bytes - H  )
-	||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
-	|||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
-	||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
-	|||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
-	||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
-	|||||||||||||||||||||||||+- DIST              (    1 byte  - B  )
-	||||||||||||||||||||||||||
-	<BBHHHHBIBffHHHHHHHHHHBBHB
+    ||+------------------------ VER               (    1 byte  - B  )
+    |||+++--------------------- IMEI              (3 x 2 bytes - HHH)
+    ||||||+-------------------- DRVN              (    2 bytes - H  )
+    |||||||+------------------- EVTN              (    1 byte  - B  )
+    ||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
+    |||||||||+----------------- GSAT              (    1 byte  - B  )
+    ||||||||||+---------------- LAT               (    4 bytes - f  )
+    |||||||||||+--------------- LON               (    4 bytes - f  )
+    ||||||||||||+-------------- SPD               (    2 bytes - H  )
+    |||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
+    ||||||||||||||||+---------- MBAT              (    2 bytes - H  )
+    |||||||||||||||||+--------- BBAT              (    2 bytes - H  )
+    ||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
+    |||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
+    ||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
+    |||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
+    ||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
+    |||||||||||||||||||||||||+- DIST              (    1 byte  - B  )
+    ||||||||||||||||||||||||||
+    <BBHHHHBIBffHHHHHHHHHHBBHB
 
 '''
 
@@ -164,26 +164,26 @@ sono le seguenti:
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ VER               (    1 byte  - B  )
-	|||+++--------------------- IMEI              (3 x 2 bytes - HHH)
-	||||||+-------------------- DRVN              (    2 bytes - H  )
-	|||||||+------------------- EVTN              (    1 byte  - B  )
-	||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
-	|||||||||+----------------- GSAT              (    1 byte  - B  )
-	||||||||||+---------------- LAT               (    4 bytes - f  )
-	|||||||||||+--------------- LON               (    4 bytes - f  )
-	||||||||||||+-------------- SPD               (    2 bytes - H  )
-	|||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
-	||||||||||||||||+---------- MBAT              (    2 bytes - H  )
-	|||||||||||||||||+--------- BBAT              (    2 bytes - H  )
-	||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
-	|||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
-	||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
-	|||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
-	||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
-	|||||||||||||||||||||||||+- CHAT              (    n byte  - s  )
-	||||||||||||||||||||||||||
-	<BBHHHHBIBffHHHHHHHHHHBBHs
+    ||+------------------------ VER               (    1 byte  - B  )
+    |||+++--------------------- IMEI              (3 x 2 bytes - HHH)
+    ||||||+-------------------- DRVN              (    2 bytes - H  )
+    |||||||+------------------- EVTN              (    1 byte  - B  )
+    ||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
+    |||||||||+----------------- GSAT              (    1 byte  - B  )
+    ||||||||||+---------------- LAT               (    4 bytes - f  )
+    |||||||||||+--------------- LON               (    4 bytes - f  )
+    ||||||||||||+-------------- SPD               (    2 bytes - H  )
+    |||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
+    ||||||||||||||||+---------- MBAT              (    2 bytes - H  )
+    |||||||||||||||||+--------- BBAT              (    2 bytes - H  )
+    ||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
+    |||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
+    ||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
+    |||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
+    ||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
+    |||||||||||||||||||||||||+- CHAT              (    n byte  - s  )
+    ||||||||||||||||||||||||||
+    <BBHHHHBIBffHHHHHHHHHHBBHs
 
 '''
 
@@ -193,9 +193,9 @@ sono le seguenti:
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ RSP               (    1 byte  - B  )
+    ||+------------------------ RSP               (    1 byte  - B  )
     |||
-	<BB
+    <BB
 
 '''
 
@@ -205,10 +205,10 @@ sono le seguenti:
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ RSP               (    1 byte  - B  )
-	|||+----------------------- OEFL              (    1 byte  - B  )
+    ||+------------------------ RSP               (    1 byte  - B  )
+    |||+----------------------- OEFL              (    1 byte  - B  )
     ||||
-	<BBB
+    <BBB
 
 '''
 
@@ -220,11 +220,11 @@ Valido se ONDT è compreso tra 1 e 6.
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ RSP               (    1 byte  - B  )
-	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||+------------------------ RSP               (    1 byte  - B  )
+    |||+----------------------- ONDT              (    1 byte  - B  )
     ||||+---------------------- OPLD              (    4 byte  - f  )
     |||||
-	<BBBf
+    <BBBf
 
 '''
 
@@ -236,12 +236,12 @@ Valido se ONDT è pari a 7.
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ RSP               (    1 byte  - B  )
-	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||+------------------------ RSP               (    1 byte  - B  )
+    |||+----------------------- ONDT              (    1 byte  - B  )
     ||||+---------------------- num               (    2 byte  - H  )
     |||||+--------------------- name              (    ? bytes - s  )
-	||||||
-	<BBBHs
+    ||||||
+    <BBBHs
 
 '''
 
@@ -253,11 +253,11 @@ Valido se ONDT è compreso tra 8 e 12.
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ RSP               (    1 byte  - B  )
-	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||+------------------------ RSP               (    1 byte  - B  )
+    |||+----------------------- ONDT              (    1 byte  - B  )
     ||||+---------------------- CODE or CARB      (    4 byte  - L  )
-	|||||
-	<BBBL
+    |||||
+    <BBBL
 
 '''
 
@@ -269,11 +269,11 @@ Valido se ONDT è pari a 13.
 
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
- 	||+------------------------ RSP               (    1 byte  - B  )
-	|||+----------------------- ONDT              (    1 byte  - B  )
+    ||+------------------------ RSP               (    1 byte  - B  )
+    |||+----------------------- ONDT              (    1 byte  - B  )
     ||||+---------------------- MSG               (    ? byte  - s  )
-	|||||
-	<BBBs
+    |||||
+    <BBBs
 
 '''
 
