@@ -10,6 +10,9 @@ class AsciiProtocol(ControlUnit):
 
         ControlUnit.__init__(self)
 
+        self.header = "A5"                    # Always A5
+        self.version = 1
+
     def encode(self):
         """Prende una serie di variabili e ne crea un messaggio codificato in ASCII"""
 
@@ -35,20 +38,20 @@ class AsciiProtocol(ControlUnit):
         else:
             lon_final = "{:03.0f}{:06.0f}W".format(temp[1],round(temp[0]*600000))
 
-        output_packet = self.header                  # Due caratteri fissi: A5
-        output_packet += "00"                        # La lunghezza la ricavo dopo e la metto in esadecimale
-        output_packet += "{:02X}".format(1)          # La versione per ASCII è sempre 1
-        output_packet += self.imei                        # L'imei è un campo numerico lungo 15 caratteri
-        output_packet += "{:04d}".format(self.driver)     # L'autista è un campo numerico decimale lungo 4 caratteri
-        output_packet += "{:02X}".format(self.event)      # L'evento è un byte in esadecimale
-        output_packet += time.strftime("%Y%m%d%H%M%S", s_time)  # Aggiungo la data in AAAAMMGGHHMMSS
-        output_packet += "{:02d}".format(self.sat)            # Il numero è un campo numerico decimale lungo 2 caratteri
-        output_packet += "{:s}".format(lat_final)     # Il numero è un campo numerico gradi e primi decimali senza punto
-        output_packet += "{:s}".format(lon_final)     # Il numero è un campo numerico gradi e primi decimali senza punto
-        output_packet += "{:04.0f}".format(self.speed*10)     # Il numero è un campo numerico lungo 4 bytes in km/h * 10
-        output_packet += "{:04.0f}".format(self.gasoline_r*10) # Il numero è un campo numerico lungo 4 bytes in lt * 10
-        output_packet += "{:04.0f}".format(self.gasoline_l*10) # Il numero è un campo numerico lungo 4 bytes in lt * 10
-        output_packet += "{:04.0f}".format(self.gasoline_f*10) # Il numero è un campo numerico lungo 4 bytes in lt * 10
+        output_packet = self.header
+        output_packet += "00"
+        output_packet += "{:02X}".format(1)
+        output_packet += self.imei
+        output_packet += "{:04d}".format(self.driver)
+        output_packet += "{:02X}".format(self.event)
+        output_packet += time.strftime("%Y%m%d%H%M%S", s_time)
+        output_packet += "{:02d}".format(self.sat)
+        output_packet += "{:s}".format(lat_final)
+        output_packet += "{:s}".format(lon_final)
+        output_packet += "{:04.0f}".format(self.speed*10)
+        output_packet += "{:04.0f}".format(self.gasoline_r*10)
+        output_packet += "{:04.0f}".format(self.gasoline_l*10)
+        output_packet += "{:04.0f}".format(self.gasoline_f*10)
         output_packet += "{:03.0f}".format(self.vin*10)
         output_packet += "{:03.0f}".format(self.vbatt*100)
         output_packet += "{:04.0f}".format(self.input_gasoline_r*10)
@@ -77,20 +80,6 @@ class AsciiProtocol(ControlUnit):
 
     def decode(self, input_message):
         """Prende un messaggio codificato in ASCII e ne ricava tutte le variabili"""
-
-        # Controllo l'header
-        if input_message[0:2] != "A5":
-            raise ValueError("Campo header errato ({:02X} != A5)".format(input_message[0:2]))
-
-        # Controllo lunghezza pacchetto
-        if len(input_message) != 79:
-            raise ValueError("Campo lunghezza stringa errato ({:02X} != 79)".format(len(input_message)))
-
-        #Controllo versione software
-        if input_message[4:6] != 01:
-            raise ValueError("Campo versione errata ({:02X}) != 01)".format(input_message[4:6]))
-        else:
-            self.version = input_message[4:6]
 
         return True
 

@@ -1,44 +1,33 @@
-# -*- coding: utf-8 -*-
 
-# Questa classe al momento riceve in ingresso come parametro a linea di comando una stringa codificata secondo l'attuale
-# protocollo, la comprime, la invia al server.
 
-#  Referenze
-# Unittest - https://twistedmatrix.com/documents/current/core/howto/trial.html
-# Opensourcing in the right way - https://www.jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-right-way/
-
-from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import reactor
-import struct
-import binascii
 
 class BBox():
 	def __init__(self):
 		self.IMEI = 351535057249088
 		self.DriverCode = 2131
 		self.Event = 1
-		self.Date = "04/11/2015"
-		self.Time = "20:00:00"
-		self.GpsSat = 0
-		self.GpsLat = "00 00.0000' N"
-		self.GpsLong = "000 00.0000' E"
-		self.GpsSpeed = 0.0
-		self.TankRight = 9.4
-		self.TankLeft = 8.8
-		self.TankFridge = 8.6
-		self.InputVoltage = 10.8
-		self.BatteryVoltage = 4.18
-		self.TankInRight = 0.0
-		self.TankInLeft = 0.0
-		self.TankInFridge = 0.0
-		self.TankInDeclared = 0
-		self.TankCupRightOpened = True
-		self.TankCupLeftOpened = True
-		self.TankCupFridgeOpened = True
-		self.PowerOn = True
-		self.Alarm = True
-		self.TankCupsLock = True
-		self.TotalKm = 0.0
+        self.Date = "04/11/2015"
+        self.Time = "20:00:00"
+        self.GpsSat = 0
+        self.GpsLat = "00 00.0000' N"
+        self.GpsLong = "000 00.0000' E"
+        self.GpsSpeed = 0.0
+        self.TankRight = 9.4
+        self.TankLeft = 8.8
+        self.TankFridge = 8.6
+        self.InputVoltage = 10.8
+        self.BatteryVoltage = 4.18
+        self.TankInRight = 0.0
+        self.TankInLeft = 0.0
+        self.TankInFridge = 0.0
+        self.TankInDeclared = 0
+        self.TankCupRightOpened = True
+        self.TankCupLeftOpened = True
+        self.TankCupFridgeOpened = True
+        self.PowerOn = True
+        self.Alarm = True
+        self.TankCupsLock = True
+        self.TotalKm = 0.0
 
 
 class BBoxDatagramProtocol(DatagramProtocol):
