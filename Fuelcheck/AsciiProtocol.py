@@ -2,6 +2,8 @@
 from ControlUnit import ControlUnit
 import time
 import math
+import datetime
+import calendar
 
 class AsciiProtocol(ControlUnit):
     """Classe per la codifica e decodifica del protocollo ASCII attualmente implementato"""
@@ -81,5 +83,114 @@ class AsciiProtocol(ControlUnit):
     def decode(self, input_message):
         """Prende un messaggio codificato in ASCII e ne ricava tutte le variabili"""
 
-        return True
+        # Controllo l'header
+        if input_message[0:2] != "A5":
+            raise ValueError("Campo header errato ({:2s} != A5)".format(input_message[0:2]))
 
+        # Controllo la lunghezza del pacchetto
+        if len(input_message) != int(input_message[2:4], 16):
+            raise ValueError("Campo lunghezza stringa errato ({:02X} != 0x79)".format(len(input_message)))
+
+        # Controllo versione software
+        if input_message[4:6] != "01":
+            raise ValueError("Campo versione errato ({:02X} != 01)".format(int(input_message[4:6])))
+
+        # Controllo IMEI
+        if not input_message[6:21].isdigit():
+            raise ValueError("Campo IMEI non contiene solo numeri: ({:15s})".format(input_message[6:21]))
+
+        # Controllo Autista
+        if not input_message[21:25].isdigit():
+            raise ValueError("Campo Autista non contiene solo numeri: ({:4s})".format(input_message[21:25]))
+
+        # Controllo Evento (compreso tra 0 ed FF)
+        if not 0 < int(input_message[25:27], 16) < 255 or input_message[25:27].islower():
+            raise ValueError("Campo Evento non esadecimale maiuscolo: ({:2s})".format(input_message[25:27]))
+
+        # Controllo data YYYYMMDD
+        if not input_message[27:35].isdigit():
+            raise ValueError("Formato data non corretto presenza di caratteri: ({:8s})".format(input_message[27:35]))
+        try:
+            datetime.datetime.strptime(input_message[27:35], '%Y%m%d')
+        except ValueError:
+            raise ValueError("Formato data non corretto: ({:8s})".format(input_message[27:35]))
+
+        # Controllo ora
+        if not input_message[35:41].isdigit():
+            raise ValueError("Formato ora non corretto presenza di caratteri: ({:8s})".format(input_message[35:41]))
+        try:
+            datetime.datetime.strptime(input_message[35:41], '%H%M%S')
+        except ValueError:
+            raise ValueError("Formato ora non corretto: ({:6s})".format(input_message[35:41]))
+
+        # Controllo satelliti
+        if not input_message[41:43].isdigit():
+            raise ValueError("Formato satelliti non corretto presenza di caratteri: ({:2s})".format(input_message[41:43]))
+
+        # Controllo latitudine
+        if not input_message[43:51].isdigit():
+            raise ValueError("Formato latitudine non corretto presenza di caratteri: ({:9s})".format(input_message[43:52]))
+        if not -90 <= int(input_message[43:45], 10) <= 90:
+            raise ValueError("Formato latitudine non corretto fuori range +/-90°: ({:9s})".format(input_message[43:52]))
+        if int(input_message[45:47], 10) >= 60:
+            raise ValueError("Formato latitudine non corretto fuori range > 59': ({:9s})".format(input_message[43:52]))
+        if input_message[51] != 'N' and input_message[51] != 'S':
+            raise ValueError("Formato latitudine non corretto != N/S ({:9s})".format(input_message[43:52]))
+
+        # Controllo longitudine
+        if not input_message[52:61].isdigit():
+            raise ValueError("Formato latitudine non corretto presenza di caratteri: ({:10s})".format(input_message[52:62]))
+        if not -180 <= int(input_message[52:55], 10) <= 180:
+            raise ValueError("Formato latitudine non corretto fuori range +/-180°: ({:10s})".format(input_message[52:62]))
+        if int(input_message[55:57], 10) >= 60:
+            raise ValueError("Formato latitudine non corretto fuori range > 59': ({:10s})".format(input_message[52:62]))
+        if input_message[61] != 'E' and input_message[61] != 'W':
+            raise ValueError("Formato latitudine non corretto != E/W ({:9s})".format(input_message[52:62]))
+
+        # Controllo velocita'
+        if not input_message[62:66].isdigit():
+            raise ValueError("Formato velocita' non corretto presenza di caratteri: ({:4s})".format(input_message[62:66]))
+
+        # Controllo litri serbatoio DX
+        if not input_message[66:70].isdigit():
+            raise ValueError("Formato litri DX non corretto presenza di caratteri: ({:4s})".format(input_message[66:70]))
+
+        # Controllo litri serbatoio SX
+        if not input_message[70:74].isdigit():
+            raise ValueError("Formato litri SX non corretto presenza di caratteri: ({:4s})".format(input_message[70:74]))
+
+        # Controllo litri serbatoio Frigo
+        if not input_message[74:78].isdigit():
+            raise ValueError("Formato litri FR non corretto presenza di caratteri: ({:4s})".format(input_message[74:78]))
+
+        self.imei = input_message[6:21]               # Inserisco l'IMEI verificato nella variabile imei
+        self.driver = input_message[21:25]            # Inserisco l'autista verificato nella variabile driver
+        self.event = input_message[25:27]             # Inserisco l'evento verificato nella variabile event
+
+        # genero la stringa contenente YYYYMMDD e HHMMSS
+        s_data = input_message[27:31] + \
+                 input_message[31:33] + \
+                 input_message[33:35] + \
+                 input_message[35:37] + \
+                 input_message[37:39] + \
+                 input_message[39:41]
+        self.unixtime = calendar.timegm(datetime.datetime.strptime(s_data, "%Y%m%d%H%M%S").timetuple())
+        self.sat = input_message[41:43]
+
+        if input_message[51] == 'N':
+            self.lat = float(input_message[43:45]) + float(input_message[45:51])/600000
+        else:
+            self.lat = -(float(input_message[43:45]) + float(input_message[45:51])/600000)
+        if input_message[61] == 'E':
+            self.lon = float(input_message[52:55]) + float(input_message[55:61])/600000
+        else:
+            self.lon = -(float(input_message[52:55]) + float(input_message[55:61])/600000)
+
+        self.speed = (float(input_message[62:66])/10)
+        self.gasoline_r = (float(input_message[66:70])/10)
+        self.gasoline_l = (float(input_message[70:74])/10)
+        self.gasoline_f = (float(input_message[74:78])/10)
+
+        # Disgraziato!
+
+        return True
