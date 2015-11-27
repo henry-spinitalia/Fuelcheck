@@ -5,6 +5,8 @@ class ControlUnit():
 
     CUP_OPEN = 1
     CUP_CLOSE = 0
+    CUP_UNUSED = 2
+    CUP_FAIL = 3
     ENGINE_ON = 1
     ENGINE_OFF = 0
     ALARM_ARMED = 1

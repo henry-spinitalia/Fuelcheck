@@ -163,9 +163,62 @@ class AsciiProtocol(ControlUnit):
         if not input_message[74:78].isdigit():
             raise ValueError("Formato litri FR non corretto presenza di caratteri: ({:4s})".format(input_message[74:78]))
 
+        # Controllo tensione Batteria veicolo
+        if not input_message[78:81].isdigit():
+            raise ValueError("Formato Tensione Vin non corretto presenza di caratteri: ({:3s})".format(input_message[78:81]))
+
+        # Controllo tensione Batteria interna
+        if not input_message[81:84].isdigit():
+            raise ValueError("Formato Tensione Vbatt non corretto presenza di caratteri: ({:3s})".format(input_message[81:84]))
+
+        # Controllo litri immessi serbatoio DX
+        if not input_message[84:88].isdigit():
+            raise ValueError("Formato litri immessi DX non corretto presenza di caratteri: ({:4s})".format(input_message[84:88]))
+
+        # Controllo litri immessi serbatoio SX
+        if not input_message[88:92].isdigit():
+            raise ValueError("Formato litri immessi SX non corretto presenza di caratteri: ({:4s})".format(input_message[88:92]))
+
+        # Controllo litri immessi serbatoio Frigo
+        if not input_message[92:96].isdigit():
+            raise ValueError("Formato litri immessi Frigo non corretto presenza di caratteri: ({:4s})".format(input_message[92:96]))
+
+        # Controllo litri Totali IN/OUT
+        if not input_message[96:100].isdigit():
+            raise ValueError("Formato litri Totali IN/OUT non corretto presenza di caratteri: ({:4s})".format(input_message[96:100]))
+
+        # Controllo Tappo DX
+        if input_message[100] != '1' and input_message[100] != '0' and input_message[100] != 'U' and input_message[100] != 'F':
+            raise ValueError("Formato Tappo DX non corretto presenza di caratteri non validi: ({:s})".format(input_message[100]))
+
+        # Controllo Tappo SX
+        if input_message[101] != '1' and input_message[101] != '0' and input_message[101] != 'U' and input_message[101] != 'F':
+            raise ValueError("Formato Tappo SX non corretto presenza di caratteri non validi: ({:s})".format(input_message[101]))
+
+         # Controllo Tappo Frigo
+        if input_message[102] != '1' and input_message[102] != '0' and input_message[102] != 'U' and input_message[102] != 'F':
+            raise ValueError("Formato Tappo Frigo non corretto presenza di caratteri non validi: ({:s})".format(input_message[102]))
+
+        # Controllo Quadro
+        if input_message[103] != '1' and input_message[103] != '0':
+            raise ValueError("Formato Quadro non corretto presenza di caratteri non validi: ({:s})".format(input_message[103]))
+
+        # Controllo Allarme
+        if input_message[108] != '1' and input_message[108] != '0':
+            raise ValueError("Formato Allarme non corretto presenza di caratteri non validi: ({:s})".format(input_message[108]))
+
+        # Controllo Blocco tappi
+        if input_message[109] != '1' and input_message[109] != '0':
+            raise ValueError("Formato Blocco Tappi non corretto presenza di caratteri non validi: ({:s})".format(input_message[109]))
+
+        # Controllo Km percorsi
+        if not input_message[116:121].isdigit():
+            raise ValueError("Formato Km percorsi non corretto presenza di caratteri: ({:5s})".format(input_message[116:121]))
+
+
         self.imei = input_message[6:21]               # Inserisco l'IMEI verificato nella variabile imei
-        self.driver = input_message[21:25]            # Inserisco l'autista verificato nella variabile driver
-        self.event = input_message[25:27]             # Inserisco l'evento verificato nella variabile event
+        self.driver = int(input_message[21:25])            # Inserisco l'autista verificato nella variabile driver
+        self.event = int(input_message[25:27])             # Inserisco l'evento verificato nella variabile event
 
         # genero la stringa contenente YYYYMMDD e HHMMSS
         s_data = input_message[27:31] + \
@@ -175,20 +228,74 @@ class AsciiProtocol(ControlUnit):
                  input_message[37:39] + \
                  input_message[39:41]
         self.unixtime = calendar.timegm(datetime.datetime.strptime(s_data, "%Y%m%d%H%M%S").timetuple())
-        self.sat = input_message[41:43]
+        self.sat = int(input_message[41:43])
 
         if input_message[51] == 'N':
-            self.lat = float(input_message[43:45]) + float(input_message[45:51])/600000
+            self.lat = float(input_message[43:45]) + float(input_message[45:51]) / 600000
         else:
-            self.lat = -(float(input_message[43:45]) + float(input_message[45:51])/600000)
+            self.lat = -(float(input_message[43:45]) + float(input_message[45:51]) / 600000)
         if input_message[61] == 'E':
-            self.lon = float(input_message[52:55]) + float(input_message[55:61])/600000
+            self.lon = float(input_message[52:55]) + float(input_message[55:61]) / 600000
         else:
-            self.lon = -(float(input_message[52:55]) + float(input_message[55:61])/600000)
+            self.lon = -(float(input_message[52:55]) + float(input_message[55:61]) / 600000)
 
         self.speed = (float(input_message[62:66])/10)
         self.gasoline_r = (float(input_message[66:70])/10)
         self.gasoline_l = (float(input_message[70:74])/10)
         self.gasoline_f = (float(input_message[74:78])/10)
+        self.vin = (float(input_message[78:81])/10)
+        self.vbatt = (float(input_message[81:84])/100)
+        self.input_gasoline_r = (float(input_message[84:88])/10)
+        self.input_gasoline_l = (float(input_message[88:92])/10)
+        self.input_gasoline_f = (float(input_message[92:96])/10)
+        self.input_gasoline_tot = float(input_message[96:100])
+
+        if input_message[100] == '1':
+            self.cup_r = ControlUnit.CUP_OPEN
+        elif input_message[100] == '0':
+            self.cup_r = ControlUnit.CUP_CLOSE
+        elif input_message[100] == 'U':
+            self.cup_r = ControlUnit.CUP_UNUSED
+        elif input_message[100] == 'F':
+            self.cup_r = ControlUnit.CUP_FAIL
+
+        if input_message[101] == '1':
+            self.cup_l = ControlUnit.CUP_OPEN
+        elif input_message[101] == '0':
+            self.cup_l = ControlUnit.CUP_CLOSE
+        elif input_message[101] == 'U':
+            self.cup_l = ControlUnit.CUP_UNUSED
+        elif input_message[101] == 'F':
+            self.cup_l = ControlUnit.CUP_FAIL
+
+        if input_message[102] == '1':
+            self.cup_f = ControlUnit.CUP_OPEN
+        elif input_message[102] == '0':
+            self.cup_f = ControlUnit.CUP_CLOSE
+        elif input_message[102] == 'U':
+            self.cup_f = ControlUnit.CUP_UNUSED
+        elif input_message[102] == 'F':
+            self.cup_f = ControlUnit.CUP_FAIL
+
+        if input_message[103] == '1':
+            self.engine = ControlUnit.ENGINE_ON
+        elif input_message[103] == '0':
+            self.engine = ControlUnit.ENGINE_OFF
+
+        self.unused_inputs = str('UUUU')
+
+        if input_message[108] == '1':
+            self.alarm = ControlUnit.ALARM_ARMED
+        elif input_message[108] == '0':
+            self.alarm = ControlUnit.ALARM_UNARMED
+
+        if input_message[109] == '1':
+            self.cup_lock = ControlUnit.CAPS_LOCKED
+        elif input_message[109] == '0':
+            self.cup_lock = ControlUnit.CAPS_UNLOCKED
+
+        self.unused_outputs =  'UUUUUU'
+
+        self.distance_travelled = (float(input_message[116:121])/10)
 
         return True
