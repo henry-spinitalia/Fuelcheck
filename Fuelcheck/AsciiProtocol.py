@@ -191,5 +191,6 @@ class AsciiProtocol(ControlUnit):
         self.gasoline_l = (float(input_message[70:74])/10)
         self.gasoline_f = (float(input_message[74:78])/10)
 
+        # Disgraziato!
 
         return True
