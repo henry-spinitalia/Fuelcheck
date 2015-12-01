@@ -120,27 +120,30 @@ class ControlUnit():
             raise ValueError("L'attributo input_gasoline_tot deve essere un numero intero positivo minore di 9999")
         if type(self.cup_r) is not int:
             raise TypeError("L'attributo cup_r deve essere un numero intero")
-        if self.cup_r is not ControlUnit.CUP_CLOSE and self.cup_r is not ControlUnit.CUP_OPEN:
-            raise ValueError("L'attributo cup_r deve essere pari a CUP_OPEN o CUP_CLOSE")
+        if self.cup_r not in (ControlUnit.CUP_CLOSE, ControlUnit.CUP_OPEN, ControlUnit.CUP_FAIL,
+                              ControlUnit.CUP_UNUSED):
+            raise ValueError("L'attributo cup_r deve essere pari a CUP_OPEN o CUP_CLOSE o CUP_FAIL o CUP_UNUSED")
         if type(self.cup_l) is not int:
             raise TypeError("L'attributo cup_l deve essere un numero intero")
-        if self.cup_l is not ControlUnit.CUP_CLOSE and self.cup_l is not ControlUnit.CUP_OPEN:
-            raise ValueError("L'attributo cup_l deve essere pari a CUP_OPEN o CUP_CLOSE")
+        if self.cup_l not in (ControlUnit.CUP_CLOSE, ControlUnit.CUP_OPEN, ControlUnit.CUP_FAIL,
+                              ControlUnit.CUP_UNUSED):
+            raise ValueError("L'attributo cup_l deve essere pari a CUP_OPEN o CUP_CLOSE o CUP_FAIL o CUP_UNUSED")
         if type(self.cup_f) is not int:
             raise TypeError("L'attributo cup_f deve essere un numero intero")
-        if self.cup_f is not ControlUnit.CUP_CLOSE and self.cup_f is not ControlUnit.CUP_OPEN:
-            raise ValueError("L'attributo cup_f deve essere pari a CUP_OPEN o CUP_CLOSE")
+        if self.cup_f not in (ControlUnit.CUP_CLOSE, ControlUnit.CUP_OPEN, ControlUnit.CUP_FAIL,
+                              ControlUnit.CUP_UNUSED):
+            raise ValueError("L'attributo cup_f deve essere pari a CUP_OPEN o CUP_CLOSE o CUP_FAIL o CUP_UNUSED")
         if type(self.engine) is not int:
             raise TypeError("L'attributo engine deve essere un numero intero")
-        if self.engine is not ControlUnit.ENGINE_OFF and self.engine is not ControlUnit.ENGINE_ON:
+        if self.engine not in (ControlUnit.ENGINE_OFF, ControlUnit.ENGINE_ON):
             raise ValueError("L'attributo engine deve essere pari a ENGINE_OFF o ENGINE_ON")
         if type(self.alarm) is not int:
             raise TypeError("L'attributo engine deve essere un numero intero")
-        if self.alarm is not ControlUnit.ALARM_UNARMED and self.alarm is not ControlUnit.ALARM_ARMED:
+        if self.alarm not in (ControlUnit.ALARM_UNARMED, ControlUnit.ALARM_ARMED):
             raise ValueError("L'attributo engine deve essere pari a ALARM_UNARMED o ALARM_ARMED")
         if type(self.cup_lock) is not int:
             raise TypeError("L'attributo engine deve essere un numero intero")
-        if self.cup_lock is not ControlUnit.CAPS_UNLOCKED and self.cup_lock is not ControlUnit.CAPS_LOCKED:
+        if self.cup_lock not in (ControlUnit.CAPS_UNLOCKED, ControlUnit.CAPS_LOCKED):
             raise ValueError("L'attributo engine deve essere pari a CAPS_UNLOCKED o CAPS_LOCKED")
         if type(self.distance_travelled) is not float and type(self.distance_travelled) is not int:
             raise TypeError("L'attributo input_gasoline_f deve essere un numero intero o decimale")

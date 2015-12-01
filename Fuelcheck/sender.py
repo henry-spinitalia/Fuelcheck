@@ -9,36 +9,78 @@
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from optparse import OptionParser
-import BinaryProtocol
+from BinaryProtocol import BinaryProtocol
+from AsciiProtocol import AsciiProtocol
 
-class CtrlUnitDatagramProtocol(DatagramProtocol, BinaryProtocol):
 
-    def __init__(self):
+class CtrlUnitDatagramProtocol(DatagramProtocol):
 
-        self.parser = OptionParser()
-        self.parser.add_option("-m", "--message", dest="filename", help="send the message MSG", metavar="MSG")
-        self.parser.add_option("-s", "--server", dest="server", help="send the message to server ADDR", metavar="ADDR")
-        self.Packets = 10
-        self.server_address = 127.0.0.1
+    def __init__(self, options):
 
-    def startProtocol(self):
+        b_proto = BinaryProtocol()
+        a_proto = AsciiProtocol()
+
+        a_proto.decode(options.message)
+
+        # Al momento non ho alternative
+        b_proto.imei = a_proto.imei
+        b_proto.driver = a_proto.driver
+        b_proto.event = a_proto.event
+        b_proto.unixtime = a_proto.unixtime
+        b_proto.sat = a_proto.sat
+        b_proto.lat = a_proto.lat
+        b_proto.lon = a_proto.lon
+        b_proto.speed = a_proto.speed
+        b_proto.gasoline_r = a_proto.gasoline_r
+        b_proto.gasoline_l = a_proto.gasoline_l
+        b_proto.gasoline_f = a_proto.gasoline_f
+        b_proto.vin = a_proto.vin
+        b_proto.vbatt = a_proto.vbatt
+        b_proto.input_gasoline_r = a_proto.input_gasoline_r
+        b_proto.input_gasoline_l = a_proto.input_gasoline_l
+        b_proto.input_gasoline_f = a_proto.input_gasoline_f
+        b_proto.input_gasoline_tot = a_proto.input_gasoline_tot
+        b_proto.cup_r = a_proto.cup_r
+        b_proto.cup_l = a_proto.cup_l
+        b_proto.cup_f = a_proto.cup_f
+        b_proto.engine = a_proto.engine
+        b_proto.alarm = a_proto.alarm
+        b_proto.cup_lock = a_proto.cup_lock
+        b_proto.distance_travelled = a_proto.distance_travelled
+
+        b_proto.encode()
+        self.packet = b_proto.output_packet
+        self.server_address = options.server
+
+    def gotIP(self, ip):
+        print "IP of '{}' is {}".format(self.server_address, ip)
         # All'avvio del protocollo si connette ed invia un datagramma
-        self.transport.connect(self.server_address, 8000)
+        self.transport.connect(ip, 9123)
         self.sendDatagram()
 
+    def startProtocol(self):
+        # Come prima cosa risolvo il nome
+        reactor.resolve(self.server_address).addCallback(self.gotIP)
+
     def sendDatagram(self):
-        # Al decimo invio spegne il reattore
-        if self.Packets >= 0:
-            self.transport.write(self.pack_data())
-            self.Packets -= 1
-        else:
-            reactor.stop()
+        self.transport.write(self.packet)
 
     def datagramReceived(self, datagram, host):
         # Risposta ricevuta dal server
         print 'Datagram received: ', repr(datagram)
-        self.sendDatagram()
+        reactor.stop()
 
 if __name__ == '__main__':
-    reactor.listenUDP(0, CtrlUnitDatagramProtocol())
+
+    # Inizializzo l'interprete dei parametri in ingresso
+    parser = OptionParser()
+    parser.add_option("-m", "--message", help="Messaggio MEX da consegnare al server", metavar="MEX",
+                      action="store", type="string", dest="message")
+    parser.add_option("-s", "--server", help="Indirizzo del server a cui inviare il messaggio", metavar="ADDR",
+                      action="store", type="string", dest="server")
+    (options, args) = parser.parse_args()
+    if options.server is None:
+        parser.error('Indirizzo del server non fornito')
+
+    reactor.listenUDP(0, CtrlUnitDatagramProtocol(options))
     reactor.run()

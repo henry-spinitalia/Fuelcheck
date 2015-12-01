@@ -104,7 +104,11 @@ class AsciiProtocol(ControlUnit):
             raise ValueError("Campo Autista non contiene solo numeri: ({:4s})".format(input_message[21:25]))
 
         # Controllo Evento (compreso tra 0 ed FF)
-        if not 0 < int(input_message[25:27], 16) < 255 or input_message[25:27].islower():
+        if not 0 <= int(input_message[25:27], 16) <= 255:
+            raise ValueError("Valore del campo Evento non compreso tra 0 e 255 ({:2s})".format(input_message[25:27]))
+
+        # Controllo Evento (compreso tra 0 ed FF)
+        if (input_message[25:27].isalnum() and input_message[25:27].islower()):
             raise ValueError("Campo Evento non esadecimale maiuscolo: ({:2s})".format(input_message[25:27]))
 
         # Controllo data YYYYMMDD
@@ -248,7 +252,7 @@ class AsciiProtocol(ControlUnit):
         self.input_gasoline_r = (float(input_message[84:88])/10)
         self.input_gasoline_l = (float(input_message[88:92])/10)
         self.input_gasoline_f = (float(input_message[92:96])/10)
-        self.input_gasoline_tot = float(input_message[96:100])
+        self.input_gasoline_tot = int(input_message[96:100])
 
         if input_message[100] == '1':
             self.cup_r = ControlUnit.CUP_OPEN
