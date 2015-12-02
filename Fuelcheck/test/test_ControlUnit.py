@@ -2,6 +2,7 @@
 
 from Fuelcheck.ControlUnit import ControlUnit
 import unittest
+import binascii
 
 
 class TestControlUnit(unittest.TestCase):
@@ -262,7 +263,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.cup_r = "a"
         with self.assertRaises(TypeError):
             ctrl_unit.check_values()
-        ctrl_unit.cup_r = 2
+        ctrl_unit.cup_r = 4
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
         ctrl_unit.cup_r = ctrl_unit.CUP_OPEN
@@ -271,10 +272,16 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.cup_r = ctrl_unit.CUP_CLOSE
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
+        ctrl_unit.cup_r = ctrl_unit.CUP_FAIL
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.cup_r = ctrl_unit.CUP_FAIL
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
         ctrl_unit.cup_l = "a"
         with self.assertRaises(TypeError):
             ctrl_unit.check_values()
-        ctrl_unit.cup_l = 2
+        ctrl_unit.cup_l = 4
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
         ctrl_unit.cup_l = ctrl_unit.CUP_CLOSE
@@ -283,16 +290,28 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.cup_l = ctrl_unit.CUP_OPEN
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
+        ctrl_unit.cup_l = ctrl_unit.CUP_FAIL
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.cup_l = ctrl_unit.CUP_FAIL
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
         ctrl_unit.cup_f = "a"
         with self.assertRaises(TypeError):
             ctrl_unit.check_values()
-        ctrl_unit.cup_f = 2
+        ctrl_unit.cup_f = 4
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
         ctrl_unit.cup_f = ctrl_unit.CUP_OPEN
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
         ctrl_unit.cup_f = ctrl_unit.CUP_CLOSE
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.cup_f = ctrl_unit.CUP_FAIL
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.cup_f = ctrl_unit.CUP_FAIL
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
 
@@ -350,6 +369,355 @@ class TestControlUnit(unittest.TestCase):
             ctrl_unit.check_values()
         ctrl_unit.distance_travelled = 365.1
         result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+
+    def test_encode_ascii(self):
+
+        ctrl_unit = ControlUnit()
+
+        ctrl_unit.imei = "351535057252702"
+        ctrl_unit.driver = 1121
+        ctrl_unit.event = 7
+        ctrl_unit.unixtime = 1447501929
+        ctrl_unit.sat = 11
+        ctrl_unit.lat = 41.694336
+        ctrl_unit.lon = 12.599915
+        ctrl_unit.speed = 11.2
+        ctrl_unit.gasoline_r = 200.1
+        ctrl_unit.gasoline_l = 300.2
+        ctrl_unit.gasoline_f = 400.3
+        ctrl_unit.vin = 25.8
+        ctrl_unit.vbatt = 4.26
+        ctrl_unit.input_gasoline_r = 500.2
+        ctrl_unit.input_gasoline_l = 600.3
+        ctrl_unit.input_gasoline_f = 700.4
+        ctrl_unit.input_gasoline_tot = 8888
+        ctrl_unit.cup_r = ControlUnit.CUP_CLOSE
+        ctrl_unit.cup_l = ControlUnit.CUP_OPEN
+        ctrl_unit.cup_f = ControlUnit.CUP_CLOSE
+        ctrl_unit.engine = ControlUnit.ENGINE_ON
+        ctrl_unit.alarm = ControlUnit.ALARM_UNARMED
+        ctrl_unit.cup_lock = ControlUnit.CAPS_UNLOCKED
+        ctrl_unit.distance_travelled = 365.1
+
+        result = ctrl_unit.encode_ascii()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            "A57901351535057252702112107201511141152091141416602N012359949E011220013002400325842650026003700488880101"
+            "UUUU00UUUUUU03651"
+        )
+
+    def test_decode_ascii(self):
+
+        ctrl_unit = ControlUnit()
+
+        packet = "A57901351535057252702112107201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet += "0101UUUU00UUUUUU03651"
+
+        # Test del controllo del campo HDR, diverso da A5
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii("B5" + packet[2:])
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:2] + "89" + packet[4:])  # Test del campo LEN != len(str)
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:4] + "02" + packet[6:])  # Test del campo VER != 1
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:6] + "351A35057252702" + packet[21:])  # Test del campo IMEI, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:6] + "3515a5057252702" + packet[21:])  # Test del campo IMEI, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:6] + "35153s057252702" + packet[21:])  # Test del campo IMEI, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:21] + "A121" + packet[25:])  # Test del campo DRVN, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:21] + "1a21" + packet[25:])  # Test del campo DRVN, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:21] + "11s1" + packet[25:])  # Test del campo DRVN, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:25] + "0a" + packet[27:])  # Test del campo EVTN, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:25] + "s1" + packet[27:])  # Test del campo EVTN, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:27] + "20151314" + packet[35:])  # Test del campo DATE, wrong
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:27] + "201511s4" + packet[35:])  # Test del campo DATE, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:35] + "117209" + packet[41:])  # Test del campo TIME, wrong
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:35] + "115t09" + packet[41:])  # Test del campo TIME, wrong
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:41] + "1A" + packet[43:])  # Test del campo GSAT, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:43] + "41416602E" + packet[52:])  # Test del campo LAT, wrong
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:43] + "4s416602N" + packet[52:])  # Test del campo LAT, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:52] + "012759949N" + packet[62:])  # Test del campo LONG, wrong
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:52] + "012k59949E" + packet[62:])  # Test del campo LONG, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:52] + "012k59949E" + packet[62:])  # Test del campo LONG, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:62] + "0A12" + packet[66:])  # Test del campo SPD, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:62] + "01a2" + packet[66:])  # Test del campo SPD, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:62] + "011s" + packet[66:])  # Test del campo SPD, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:66] + "A001" + packet[70:])  # Test del campo FTR, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:66] + "2a01" + packet[70:])  # Test del campo FTR, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:66] + "20h1" + packet[70:])  # Test del campo FTR, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:70] + "A002" + packet[74:])  # Test del campo FTL, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:70] + "3a02" + packet[74:])  # Test del campo FTL, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:70] + "30h2" + packet[74:])  # Test del campo FTL, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:74] + "A003" + packet[78:])  # Test del campo FTF, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:74] + "4a03" + packet[78:])  # Test del  campo FTF, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:74] + "40h3" + packet[78:])  # Test del campo FTF, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:78] + "A58" + packet[81:])  # Test del campo MBAT, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:78] + "2a8" + packet[81:])  # Test del campo MBAT, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:78] + "25n" + packet[81:])  # Test del campo MBAT, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:81] + "A58" + packet[84:])  # Test del campo BBAT, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:81] + "2a8" + packet[84:])  # Test del campo BBAT, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:81] + "25n" + packet[84:])  # Test del campo BBAT, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:84] + "B002" + packet[88:])  # Test del campo FCRM, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:84] + "5b02" + packet[88:])  # Test del campo FCRM, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:84] + "50m2" + packet[88:])  # Test del campo FCRM, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:88] + "C003" + packet[92:])  # Test del campo FCLM, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:88] + "6c03" + packet[92:])  # Test del campo FCLM, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:88] + "60l3" + packet[92:])  # Test del campo FCLM, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:92] + "C003" + packet[96:])  # Test del campo FCFM, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:92] + "6c03" + packet[96:])  # Test del campo FCFM, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:92] + "60l3" + packet[96:])  # Test del campo FCFM, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:96] + "D888" + packet[100:])  # Test del campo FCDL, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:96] + "8d88" + packet[100:])  # Test del campo FCDL, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:96] + "88u8" + packet[100:])  # Test del campo FCDL, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:100] + "a" + packet[101:])  # Test del campo FCRS, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:101] + "a" + packet[102:])  # Test del campo FCLS, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:102] + "a" + packet[103:])  # Test del campo FCFS, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:103] + "a" + packet[104:])  # Test del campo IGSS, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:108] + "a" + packet[109:])  # Test del campo ALRM, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:109] + "a" + packet[110:])  # Test del campo FCRL, string
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:116] + "A3651")  # Test del campo HSZZ, HEX
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:116] + "0a651")  # Test del campo HSZZ, hex
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:116] + "03s51")  # Test del campo HSZZ, HEX
+
+        # Ora provo la conversione di tutti i parametri corretti
+        result = ctrl_unit.decode_ascii(packet)
+
+        self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.ascii_header, "A5")
+        self.assertEqual(ctrl_unit.imei, "351535057252702")
+        self.assertEqual(ctrl_unit.driver, 1121)
+        self.assertEqual(ctrl_unit.event, 7)
+        self.assertEqual(ctrl_unit.unixtime, 1447501929)
+        self.assertEqual(ctrl_unit.sat, 11)
+        self.assertAlmostEqual(ctrl_unit.lat, 41.694337, 6)
+        self.assertAlmostEqual(ctrl_unit.lon, 12.599915, 6)
+        self.assertEqual(ctrl_unit.speed, 11.2)
+        self.assertEqual(ctrl_unit.gasoline_r, 200.1)
+        self.assertEqual(ctrl_unit.gasoline_l, 300.2)
+        self.assertEqual(ctrl_unit.gasoline_f, 400.3)
+        self.assertEqual(ctrl_unit.vin, 25.8)
+        self.assertEqual(ctrl_unit.vbatt, 4.26)
+        self.assertEqual(ctrl_unit.input_gasoline_r, 500.2)
+        self.assertEqual(ctrl_unit.input_gasoline_l, 600.3)
+        self.assertEqual(ctrl_unit.input_gasoline_f, 700.4)
+        self.assertEqual(ctrl_unit.input_gasoline_tot, 8888)
+        self.assertEqual(ctrl_unit.cup_r, ControlUnit.CUP_CLOSE)
+        self.assertEqual(ctrl_unit.cup_l, ControlUnit.CUP_OPEN)
+        self.assertEqual(ctrl_unit.cup_f, ControlUnit.CUP_CLOSE)
+        self.assertEqual(ctrl_unit.engine, ControlUnit.ENGINE_ON)
+        self.assertEqual(ctrl_unit.unused_inputs, "UUUU")
+        self.assertEqual(ctrl_unit.alarm, ControlUnit.ALARM_UNARMED)
+        self.assertEqual(ctrl_unit.cup_lock, ControlUnit.CAPS_UNLOCKED)
+        self.assertEqual(ctrl_unit.unused_outputs, "UUUUUU")
+        self.assertEqual(ctrl_unit.distance_travelled, 365.1)
+
+    def test_encode_binary(self):
+
+        ctrl_unit = ControlUnit()
+
+        ctrl_unit.imei = "351535057252702"
+        ctrl_unit.driver = 1121
+        ctrl_unit.event = 7
+        ctrl_unit.unixtime = 1447501929
+        ctrl_unit.sat = 11
+        ctrl_unit.lat = 41.694336
+        ctrl_unit.lon = 12.599915
+        ctrl_unit.speed = 11.2
+        ctrl_unit.gasoline_r = 200.1
+        ctrl_unit.gasoline_l = 300.2
+        ctrl_unit.gasoline_f = 400.3
+        ctrl_unit.vin = 25.8
+        ctrl_unit.vbatt = 4.26
+        ctrl_unit.input_gasoline_r = 500.2
+        ctrl_unit.input_gasoline_l = 600.3
+        ctrl_unit.input_gasoline_f = 700.4
+        ctrl_unit.input_gasoline_tot = 8888
+        ctrl_unit.cup_r = ControlUnit.CUP_CLOSE
+        ctrl_unit.cup_l = ControlUnit.CUP_OPEN
+        ctrl_unit.cup_f = ControlUnit.CUP_CLOSE
+        ctrl_unit.engine = ControlUnit.ENGINE_ON
+        ctrl_unit.alarm = ControlUnit.ALARM_UNARMED
+        ctrl_unit.cup_lock = ControlUnit.CAPS_UNLOCKED
+        ctrl_unit.distance_travelled = 365.1
+
+        result = ctrl_unit.encode_binary()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            binascii.unhexlify(
+                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+            )
+        )
+
+    def test_decode_binary(self):
+
+        ctrl_unit = ControlUnit()
+
+        # Controllo la lunghezza errata
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_binary(
+                binascii.unhexlify(
+                    '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430EAA'
+                )
+            )
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_binary(
+                binascii.unhexlify(
+                    '200251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+                )
+            )
+
+        # Ora controllo la traduzione
+        result = ctrl_unit.decode_binary(
+            binascii.unhexlify(
+                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+            )
+        )
+
+        self.assertEqual(ctrl_unit.imei, "351535057252702")
+        self.assertEqual(ctrl_unit.driver, 1121)
+        self.assertEqual(ctrl_unit.event, 7)
+        self.assertEqual(ctrl_unit.unixtime, 1447501929)
+        self.assertEqual(ctrl_unit.sat, 11)
+        self.assertAlmostEqual(ctrl_unit.lat, 41.694336, 6)
+        self.assertAlmostEqual(ctrl_unit.lon, 12.599915, 6)
+        self.assertEqual(ctrl_unit.speed, 11.2)
+        self.assertEqual(ctrl_unit.gasoline_r, 200.1)
+        self.assertEqual(ctrl_unit.gasoline_l, 300.2)
+        self.assertEqual(ctrl_unit.gasoline_f, 400.3)
+        self.assertEqual(ctrl_unit.vin, 25.8)
+        self.assertEqual(ctrl_unit.vbatt, 4.26)
+        self.assertEqual(ctrl_unit.input_gasoline_r, 500.2)
+        self.assertEqual(ctrl_unit.input_gasoline_l, 600.3)
+        self.assertEqual(ctrl_unit.input_gasoline_f, 700.4)
+        self.assertEqual(ctrl_unit.input_gasoline_tot, 8888)
+        self.assertEqual(ctrl_unit.cup_r, ControlUnit.CUP_CLOSE)
+        self.assertEqual(ctrl_unit.cup_l, ControlUnit.CUP_OPEN)
+        self.assertEqual(ctrl_unit.cup_f, ControlUnit.CUP_CLOSE)
+        self.assertEqual(ctrl_unit.engine, ControlUnit.ENGINE_ON)
+        self.assertEqual(ctrl_unit.alarm, ControlUnit.ALARM_UNARMED)
+        self.assertEqual(ctrl_unit.cup_lock, ControlUnit.CAPS_UNLOCKED)
+        self.assertEqual(ctrl_unit.distance_travelled, 365.1)
         self.assertEqual(result, True)
 
 
