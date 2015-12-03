@@ -49,10 +49,12 @@ class ControlUnit():
         self.binary_version = 2               # Sempre pari a 2 per la versione binaria
 
         # Codica binaria
-        self.s_mex_1 = struct.Struct('<BBHHHHBIBffHHHHHHHHHHBBH')  # Messaggio di base
+        self.s_mex_1 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBH')   # Messaggio di base
+        self.s_mex_2 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBHB')  # Messaggio con id distributore
+        self.s_mex_3 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBHs')  # Messaggio con messaggio di testo
 
         # Variabili di stato della centralina
-        self.imei = "000000000000000"         # 351535057249088 - 15 char len
+        self.imei = 123451234512345L          # 351535057249088 - 15 char len
         self.driver = 0                       # Id dell'autista
         self.event = 0                        # Id dell'evento
         self.unixtime = 0                     # Data dell'evento
@@ -82,10 +84,10 @@ class ControlUnit():
 
     def check_values(self):
 
-        if len(self.imei) != 15:
-            raise ValueError("L'attributo imei deve essere una stringa numerica lunga 15 caratteri")
-        if not self.imei.isdigit():
-            raise TypeError("L'attributo imei deve essere una stringa numerica")
+        if type(self.imei) is not long:
+            raise TypeError("L'attributo imei deve essere un numero")
+        if len(str(self.imei)) != 15:
+            raise ValueError("L'attributo imei deve essere un numero di 15 cifre")
         if type(self.driver) is not int:
             raise TypeError("L'attributo driver deve essere un intero")
         if not 0 <= self.driver <= 9999:
@@ -249,7 +251,7 @@ class ControlUnit():
         output_packet = self.ascii_header
         output_packet += "00"
         output_packet += "{0:02X}".format(1)
-        output_packet += self.imei
+        output_packet += str(self.imei)
         output_packet += "{0:04d}".format(self.driver)
         output_packet += "{0:02X}".format(self.event)
         output_packet += time.strftime("%Y%m%d%H%M%S", s_time)
@@ -467,7 +469,7 @@ class ControlUnit():
                 "Formato Km percorsi non corretto presenza di caratteri: ({0:5s})".format(input_message[116:121])
             )
 
-        self.imei = input_message[6:21]               # Inserisco l'IMEI verificato nella variabile imei
+        self.imei = long(input_message[6:21])         # Inserisco l'IMEI verificato nella variabile imei
         self.driver = int(input_message[21:25])       # Inserisco l'autista verificato nella variabile driver
         self.event = int(input_message[25:27])        # Inserisco l'evento verificato nella variabile event
 
@@ -634,7 +636,7 @@ class ControlUnit():
         values = (
             self.s_mex_1.size,			                                          # LEN
             0x02,                                                                 # VER
-            int(self.imei[0:5]), int(self.imei[5:10]), int(self.imei[10:15]),     # IMEI
+            self.imei,                                                            # IMEI
             self.driver,                                                          # DRVN
             self.event,                                                           # EVTN
             self.unixtime,                                                        # UTC_Unixtime
@@ -683,26 +685,26 @@ class ControlUnit():
         # Poi assegni i vari elementi della tupla, agli attributi della classe BinaryProtocol ereditati
         # dal padre ControlUnit
 
-        self.imei = "{0:05d}{1:05d}{2:05d}".format(unpacked_data[2], unpacked_data[3], unpacked_data[4])
-        self.driver = unpacked_data[5]
-        self.event = unpacked_data[6]
-        self.unixtime = unpacked_data[7]
-        self.sat = unpacked_data[8]
-        self.lat = unpacked_data[9]
-        self.lon = unpacked_data[10]
-        self.speed = unpacked_data[11] / 10.0
-        self.gasoline_r = unpacked_data[12] / 10.0
-        self.gasoline_l = unpacked_data[13] / 10.0
-        self.gasoline_f = unpacked_data[14] / 10.0
-        self.vin = unpacked_data[15] / 10.0
-        self.vbatt = unpacked_data[16] / 100.0
-        self.input_gasoline_r = unpacked_data[17] / 10.0
-        self.input_gasoline_l = unpacked_data[18] / 10.0
-        self.input_gasoline_f = unpacked_data[19] / 10.0
-        self.input_gasoline_tot = unpacked_data[20]
-        bitfield_input = unpacked_data[21]
-        bitfield_output = unpacked_data[22]
-        self.distance_travelled = unpacked_data[23] / 10.0
+        self.imei = unpacked_data[2]
+        self.driver = unpacked_data[3]
+        self.event = unpacked_data[4]
+        self.unixtime = unpacked_data[5]
+        self.sat = unpacked_data[6]
+        self.lat = unpacked_data[7]
+        self.lon = unpacked_data[8]
+        self.speed = unpacked_data[9] / 10.0
+        self.gasoline_r = unpacked_data[10] / 10.0
+        self.gasoline_l = unpacked_data[11] / 10.0
+        self.gasoline_f = unpacked_data[12] / 10.0
+        self.vin = unpacked_data[13] / 10.0
+        self.vbatt = unpacked_data[14] / 100.0
+        self.input_gasoline_r = unpacked_data[15] / 10.0
+        self.input_gasoline_l = unpacked_data[16] / 10.0
+        self.input_gasoline_f = unpacked_data[17] / 10.0
+        self.input_gasoline_tot = unpacked_data[18]
+        bitfield_input = unpacked_data[19]
+        bitfield_output = unpacked_data[20]
+        self.distance_travelled = unpacked_data[21] / 10.0
 
         # Decodifico il bitpack per gli input
 

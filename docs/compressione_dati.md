@@ -45,8 +45,7 @@ il protocollo finora utilizzato, vengono applicate le seguenti considerazioni:
 * La lunghezza LEN è un controllo, e al momento va bene che sia al massimo di 1 byte (1 byte - B)
 * La versione VER al momento non è molto utilizzato, ma servirà per differenziare il tipo di informazioni inviate;
   anche questo campo va bene che sia lungo un byte senza segno (1 byte - B)
-* L'IMEI viene comunemente spezzato in tre interi senza segno da 2 bytes (0-65535), quindi 353681048805535 diventa
-  35368, 10488, 05535 (6 bytes - HHH)
+* L'IMEI è un numero interno di 15 cifre, quindi 353681048805535, che è un unsigned long di 8 bytes (8 bytes - Q)
 * Il numero di autisti DRVN massimo è di 9999, quindi anche questo diventa un intero senza segno a 2 bytes
   (2 bytes - H)
 * Il codice dell'evento EVTN è un byte senza segno. Al momento non tutti i pacchetti contengono le stesse
@@ -103,121 +102,110 @@ sono le seguenti:
 
 ## Pacchetto normale
 
-'''
-
-    +-------------------------- Little endian
-    |+------------------------- LEN               (    1 byte  - B  )
-    ||+------------------------ VER               (    1 byte  - B  )
-    |||+++--------------------- IMEI              (3 x 2 bytes - HHH)
-    ||||||+-------------------- DRVN              (    2 bytes - H  )
-    |||||||+------------------- EVTN              (    1 byte  - B  )
-    ||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
-    |||||||||+----------------- GSAT              (    1 byte  - B  )
-    ||||||||||+---------------- LAT               (    4 bytes - f  )
-    |||||||||||+--------------- LON               (    4 bytes - f  )
-    ||||||||||||+-------------- SPD               (    2 bytes - H  )
-    |||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
-    ||||||||||||||||+---------- MBAT              (    2 bytes - H  )
-    |||||||||||||||||+--------- BBAT              (    2 bytes - H  )
-    ||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
-    |||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
-    ||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
-    |||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
-    ||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
-    |||||||||||||||||||||||||
-    <BBHHHHBIBffHHHHHHHHHHBBH
-
-'''
+```Text
+    +------------------------ Little endian
+    |+----------------------- LEN               (    1 byte  - B  )
+    ||+---------------------- VER               (    1 byte  - B  )
+    |||+--------------------- IMEI              (    8 bytes - Q  )
+    ||||+-------------------- DRVN              (    2 bytes - H  )
+    |||||+------------------- EVTN              (    1 byte  - B  )
+    ||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
+    |||||||+----------------- GSAT              (    1 byte  - B  )
+    ||||||||+---------------- LAT               (    4 bytes - f  )
+    |||||||||+--------------- LON               (    4 bytes - f  )
+    ||||||||||+-------------- SPD               (    2 bytes - H  )
+    |||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
+    ||||||||||||||+---------- MBAT              (    2 bytes - H  )
+    |||||||||||||||+--------- BBAT              (    2 bytes - H  )
+    ||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
+    |||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
+    ||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
+    |||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
+    ||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
+    |||||||||||||||||||||||
+    <BBQHBIBffHHHHHHHHHHBBH
+```
 
 ## Pacchetto di rifornimento
 
-'''
-
-    +-------------------------- Little endian
-    |+------------------------- LEN               (    1 byte  - B  )
-    ||+------------------------ VER               (    1 byte  - B  )
-    |||+++--------------------- IMEI              (3 x 2 bytes - HHH)
-    ||||||+-------------------- DRVN              (    2 bytes - H  )
-    |||||||+------------------- EVTN              (    1 byte  - B  )
-    ||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
-    |||||||||+----------------- GSAT              (    1 byte  - B  )
-    ||||||||||+---------------- LAT               (    4 bytes - f  )
-    |||||||||||+--------------- LON               (    4 bytes - f  )
-    ||||||||||||+-------------- SPD               (    2 bytes - H  )
-    |||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
-    ||||||||||||||||+---------- MBAT              (    2 bytes - H  )
-    |||||||||||||||||+--------- BBAT              (    2 bytes - H  )
-    ||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
-    |||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
-    ||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
-    |||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
-    ||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
-    |||||||||||||||||||||||||+- DIST              (    1 byte  - B  )
-    ||||||||||||||||||||||||||
-    <BBHHHHBIBffHHHHHHHHHHBBHB
-
-'''
+```Text
+    +------------------------ Little endian
+    |+----------------------- LEN               (    1 byte  - B  )
+    ||+---------------------- VER               (    1 byte  - B  )
+    |||+--------------------- IMEI              (    8 bytes - Q  )
+    ||||+-------------------- DRVN              (    2 bytes - H  )
+    |||||+------------------- EVTN              (    1 byte  - B  )
+    ||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
+    |||||||+----------------- GSAT              (    1 byte  - B  )
+    ||||||||+---------------- LAT               (    4 bytes - f  )
+    |||||||||+--------------- LON               (    4 bytes - f  )
+    ||||||||||+-------------- SPD               (    2 bytes - H  )
+    |||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
+    ||||||||||||||+---------- MBAT              (    2 bytes - H  )
+    |||||||||||||||+--------- BBAT              (    2 bytes - H  )
+    ||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
+    |||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
+    ||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
+    |||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
+    ||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
+    |||||||||||||||||||||||+- DIST              (    1 byte  - B  )
+    ||||||||||||||||||||||||
+    <BBQHBIBffHHHHHHHHHHBBHB
+```
 
 ## Pacchetto con messaggio chat
 
-'''
-
-    +-------------------------- Little endian
-    |+------------------------- LEN               (    1 byte  - B  )
-    ||+------------------------ VER               (    1 byte  - B  )
-    |||+++--------------------- IMEI              (3 x 2 bytes - HHH)
-    ||||||+-------------------- DRVN              (    2 bytes - H  )
-    |||||||+------------------- EVTN              (    1 byte  - B  )
-    ||||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
-    |||||||||+----------------- GSAT              (    1 byte  - B  )
-    ||||||||||+---------------- LAT               (    4 bytes - f  )
-    |||||||||||+--------------- LON               (    4 bytes - f  )
-    ||||||||||||+-------------- SPD               (    2 bytes - H  )
-    |||||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
-    ||||||||||||||||+---------- MBAT              (    2 bytes - H  )
-    |||||||||||||||||+--------- BBAT              (    2 bytes - H  )
-    ||||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
-    |||||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
-    ||||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
-    |||||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
-    ||||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
-    |||||||||||||||||||||||||+- CHAT              (    n byte  - s  )
-    ||||||||||||||||||||||||||
-    <BBHHHHBIBffHHHHHHHHHHBBHs
-
-'''
+```Text
+    +------------------------ Little endian
+    |+----------------------- LEN               (    1 byte  - B  )
+    ||+---------------------- VER               (    1 byte  - B  )
+    |||+--------------------- IMEI              (    8 bytes - Q  )
+    ||||+-------------------- DRVN              (    2 bytes - H  )
+    |||||+------------------- EVTN              (    1 byte  - B  )
+    ||||||+------------------ UTC_Unixtime      (    4 bytes - I  )
+    |||||||+----------------- GSAT              (    1 byte  - B  )
+    ||||||||+---------------- LAT               (    4 bytes - f  )
+    |||||||||+--------------- LON               (    4 bytes - f  )
+    ||||||||||+-------------- SPD               (    2 bytes - H  )
+    |||||||||||+++----------- Gasoline LRF      (3 x 2 bytes - HHH)
+    ||||||||||||||+---------- MBAT              (    2 bytes - H  )
+    |||||||||||||||+--------- BBAT              (    2 bytes - H  )
+    ||||||||||||||||+++------ In gasoline LRF   (3 x 2 bytes - HHH)
+    |||||||||||||||||||+----- In gasoline TOT   (    2 bytes - H  )
+    ||||||||||||||||||||+---- Inputs Bitpacked  (    1 byte  - B  )
+    |||||||||||||||||||||+--- Outputs Bitpacked (    1 byte  - B  )
+    ||||||||||||||||||||||+-- HSZZ              (    2 bytes - H  )
+    |||||||||||||||||||||||+- CHAT              (    n byte  - s  )
+    ||||||||||||||||||||||||
+    <BBQHBIBffHHHHHHHHHHBBHs
+```
 
 ## Pacchetto di risposta normale
 
-'''
-
+```Text
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
     ||+------------------------ RSP               (    1 byte  - B  )
     |||
     <BB
-
-'''
+```
 
 ## Pacchetto di risposta con errori
 
-'''
-
+```Text
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
     ||+------------------------ RSP               (    1 byte  - B  )
     |||+----------------------- OEFL              (    1 byte  - B  )
     ||||
     <BBB
-
-'''
+```
 
 ## Pacchetto di risposta con parametri di conversione
 
 Valido se ONDT è compreso tra 1 e 6.
 
-'''
-
+```
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
     ||+------------------------ RSP               (    1 byte  - B  )
@@ -225,15 +213,13 @@ Valido se ONDT è compreso tra 1 e 6.
     ||||+---------------------- OPLD              (    4 byte  - f  )
     |||||
     <BBBf
-
-'''
+```
 
 ## Pacchetto di risposta con nome dell'autista
 
 Valido se ONDT è pari a 7.
 
-'''
-
+```Text
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
     ||+------------------------ RSP               (    1 byte  - B  )
@@ -242,15 +228,13 @@ Valido se ONDT è pari a 7.
     |||||+--------------------- name              (    ? bytes - s  )
     ||||||
     <BBBHs
-
-'''
+```
 
 ## Pacchetto di risposta con un codice o il carburante in sede
 
 Valido se ONDT è compreso tra 8 e 12.
 
-'''
-
+```Text
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
     ||+------------------------ RSP               (    1 byte  - B  )
@@ -258,15 +242,13 @@ Valido se ONDT è compreso tra 8 e 12.
     ||||+---------------------- CODE or CARB      (    4 byte  - L  )
     |||||
     <BBBL
-
-'''
+```
 
 ## Pacchetto di risposta con un messaggio
 
 Valido se ONDT è pari a 13.
 
-'''
-
+```Text
     +-------------------------- Little endian
     |+------------------------- LEN               (    1 byte  - B  )
     ||+------------------------ RSP               (    1 byte  - B  )
@@ -274,8 +256,7 @@ Valido se ONDT è pari a 13.
     ||||+---------------------- MSG               (    ? byte  - s  )
     |||||
     <BBBs
-
-'''
+```
 
 # Precisione in gradi rispetto ai punti decimali
 

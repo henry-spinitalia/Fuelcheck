@@ -12,7 +12,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit = ControlUnit()
 
         # Inizializzo le variabili
-        ctrl_unit.imei = "351535057252702"
+        ctrl_unit.imei = 351535057252702L
         ctrl_unit.driver = 1121
         ctrl_unit.event = 7
         ctrl_unit.unixtime = 1447501929
@@ -38,16 +38,16 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.distance_travelled = 365.1
 
         # Provo a sbagliare lunghezza del campo IMEI, poi lo rendo alfanumerico, poi lo correggo
-        ctrl_unit.imei = "35153505725270"
+        ctrl_unit.imei = 35153505725270L
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
-        ctrl_unit.imei = "3515350572527021"
+        ctrl_unit.imei = 3515350572527021L
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
         ctrl_unit.imei = "351535a57252702"
         with self.assertRaises(TypeError):
             ctrl_unit.check_values()
-        ctrl_unit.imei = "351535057252702"
+        ctrl_unit.imei = 351535057252702L
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
 
@@ -375,7 +375,7 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit = ControlUnit()
 
-        ctrl_unit.imei = "351535057252702"
+        ctrl_unit.imei = 351535057252702L
         ctrl_unit.driver = 1121
         ctrl_unit.event = 7
         ctrl_unit.unixtime = 1447501929
@@ -602,7 +602,7 @@ class TestControlUnit(unittest.TestCase):
 
         self.assertEqual(result, True)
         self.assertEqual(ctrl_unit.ascii_header, "A5")
-        self.assertEqual(ctrl_unit.imei, "351535057252702")
+        self.assertEqual(ctrl_unit.imei, 351535057252702L)
         self.assertEqual(ctrl_unit.driver, 1121)
         self.assertEqual(ctrl_unit.event, 7)
         self.assertEqual(ctrl_unit.unixtime, 1447501929)
@@ -633,7 +633,7 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit = ControlUnit()
 
-        ctrl_unit.imei = "351535057252702"
+        ctrl_unit.imei = 351535057252702L
         ctrl_unit.driver = 1121
         ctrl_unit.event = 7
         ctrl_unit.unixtime = 1447501929
@@ -664,7 +664,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
             )
         )
 
@@ -690,11 +690,11 @@ class TestControlUnit(unittest.TestCase):
         # Ora controllo la traduzione
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
             )
         )
 
-        self.assertEqual(ctrl_unit.imei, "351535057252702")
+        self.assertEqual(ctrl_unit.imei, 351535057252702L)
         self.assertEqual(ctrl_unit.driver, 1121)
         self.assertEqual(ctrl_unit.event, 7)
         self.assertEqual(ctrl_unit.unixtime, 1447501929)
