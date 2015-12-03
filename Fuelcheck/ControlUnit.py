@@ -23,10 +23,13 @@ class ControlUnit():
     CAPS_UNLOCKED = 0
 
     # Input bits assignements
-    BIT_CUP_R = 1 << 7
-    BIT_CUP_L = 1 << 6
-    BIT_CUP_F = 1 << 5
-    BIT_ENGINE = 1 << 4
+    BIT_CUP_R0 = 1 << 7
+    BIT_CUP_R1 = 1 << 6
+    BIT_CUP_L0 = 1 << 5
+    BIT_CUP_L1 = 1 << 4
+    BIT_CUP_F0 = 1 << 3
+    BIT_CUP_F1 = 1 << 2
+    BIT_ENGINE = 1 << 1
 
     # Output bits assignements
     BIT_ALARM = 1 << 7
@@ -201,52 +204,83 @@ class ControlUnit():
 
         # Converto la latitudine
         temp = math.modf(self.lat)
-        if self.lat > 0:
-            lat_final = "{:02.0f}{:06.0f}N".format(temp[1], round(temp[0]*600000))
+        if self.lat >= 0:
+            lat_final = "{0:02.0f}{1:06.0f}N".format(temp[1], round(temp[0]*600000))
         else:
-            lat_final = "{:02.0f}{:06.0f}S".format(temp[1], round(temp[0]*600000))
+            lat_final = "{0:02.0f}{1:06.0f}S".format(temp[1], round(temp[0]*600000))
+
         # Converto la longitudine
         temp = math.modf(self.lon)
-        if self.lon > 0:
-            lon_final = "{:03.0f}{:06.0f}E".format(temp[1], round(temp[0]*600000))
+        if self.lon >= 0:
+            lon_final = "{0:03.0f}{1:06.0f}E".format(temp[1], round(temp[0]*600000))
         else:
-            lon_final = "{:03.0f}{:06.0f}W".format(temp[1], round(temp[0]*600000))
+            lon_final = "{0:03.0f}{1:06.0f}W".format(temp[1], round(temp[0]*600000))
+
+        # Converto il tappo destro
+        if self.cup_r == ControlUnit.CUP_OPEN:
+            cup_r_final = '1'
+        elif self.cup_r == ControlUnit.CUP_CLOSE:
+            cup_r_final = '0'
+        elif self.cup_r == ControlUnit.CUP_UNUSED:
+            cup_r_final = 'U'
+        elif self.cup_r == ControlUnit.CUP_FAIL:
+            cup_r_final = 'F'
+
+        # Converto il tappo sinistro
+        if self.cup_l == ControlUnit.CUP_OPEN:
+            cup_l_final = '1'
+        elif self.cup_l == ControlUnit.CUP_CLOSE:
+            cup_l_final = '0'
+        elif self.cup_l == ControlUnit.CUP_UNUSED:
+            cup_l_final = 'U'
+        elif self.cup_l == ControlUnit.CUP_FAIL:
+            cup_l_final = 'F'
+
+        # Converto il tappo frigo
+        if self.cup_f == ControlUnit.CUP_OPEN:
+            cup_f_final = '1'
+        elif self.cup_f == ControlUnit.CUP_CLOSE:
+            cup_f_final = '0'
+        elif self.cup_f == ControlUnit.CUP_UNUSED:
+            cup_f_final = 'U'
+        elif self.cup_f == ControlUnit.CUP_FAIL:
+            cup_f_final = 'F'
 
         output_packet = self.ascii_header
         output_packet += "00"
-        output_packet += "{:02X}".format(1)
+        output_packet += "{0:02X}".format(1)
         output_packet += self.imei
-        output_packet += "{:04d}".format(self.driver)
-        output_packet += "{:02X}".format(self.event)
+        output_packet += "{0:04d}".format(self.driver)
+        output_packet += "{0:02X}".format(self.event)
         output_packet += time.strftime("%Y%m%d%H%M%S", s_time)
-        output_packet += "{:02d}".format(self.sat)
-        output_packet += "{:s}".format(lat_final)
-        output_packet += "{:s}".format(lon_final)
-        output_packet += "{:04.0f}".format(self.speed*10)
-        output_packet += "{:04.0f}".format(self.gasoline_r*10)
-        output_packet += "{:04.0f}".format(self.gasoline_l*10)
-        output_packet += "{:04.0f}".format(self.gasoline_f*10)
-        output_packet += "{:03.0f}".format(self.vin*10)
-        output_packet += "{:03.0f}".format(self.vbatt*100)
-        output_packet += "{:04.0f}".format(self.input_gasoline_r*10)
-        output_packet += "{:04.0f}".format(self.input_gasoline_l*10)
-        output_packet += "{:04.0f}".format(self.input_gasoline_f*10)
-        output_packet += "{:04.0f}".format(self.input_gasoline_tot)
-        output_packet += "{:01d}".format(self.cup_r)
-        output_packet += "{:01d}".format(self.cup_l)
-        output_packet += "{:01d}".format(self.cup_f)
-        output_packet += "{:01d}".format(self.engine)
+        output_packet += "{0:02d}".format(self.sat)
+        output_packet += "{0:s}".format(lat_final)
+        output_packet += "{0:s}".format(lon_final)
+        output_packet += "{0:04.0f}".format(self.speed*10)
+        output_packet += "{0:04.0f}".format(self.gasoline_r*10)
+        output_packet += "{0:04.0f}".format(self.gasoline_l*10)
+        output_packet += "{0:04.0f}".format(self.gasoline_f*10)
+        output_packet += "{0:03.0f}".format(self.vin*10)
+        output_packet += "{0:03.0f}".format(self.vbatt*100)
+        output_packet += "{0:04.0f}".format(self.input_gasoline_r*10)
+        output_packet += "{0:04.0f}".format(self.input_gasoline_l*10)
+        output_packet += "{0:04.0f}".format(self.input_gasoline_f*10)
+        output_packet += "{0:04.0f}".format(self.input_gasoline_tot)
+        output_packet += "{0:s}".format(cup_r_final)
+        output_packet += "{0:s}".format(cup_l_final)
+        output_packet += "{0:s}".format(cup_f_final)
+        output_packet += "{0:01d}".format(self.engine)
         output_packet += "UUUU"
-        output_packet += "{:01d}".format(self.alarm)
-        output_packet += "{:01d}".format(self.cup_lock)
+        output_packet += "{0:01d}".format(self.alarm)
+        output_packet += "{0:01d}".format(self.cup_lock)
         output_packet += "UUUUUU"
-        output_packet += "{:05.0f}".format(self.distance_travelled*10)
+        output_packet += "{0:05.0f}".format(self.distance_travelled*10)
 
         if len(output_packet) != 121:
             return False
 
         # Calcolo la lunghezza e la inserisco in esadecimale
-        output_packet = output_packet[0:2] + "{:02X}".format(len(output_packet)) + output_packet[4:]
+        output_packet = output_packet[0:2] + "{0:02X}".format(len(output_packet)) + output_packet[4:]
 
         self.output_packet = output_packet
 
@@ -257,180 +291,180 @@ class ControlUnit():
 
         # Controllo l'header
         if input_message[0:2] != "A5":
-            raise ValueError("Campo header errato ({:2s} != A5)".format(input_message[0:2]))
+            raise ValueError("Campo header errato ({0:2s} != A5)".format(input_message[0:2]))
 
         # Controllo la lunghezza del pacchetto
         if len(input_message) != int(input_message[2:4], 16):
-            raise ValueError("Campo lunghezza stringa errato ({:02X} != 0x79)".format(len(input_message)))
+            raise ValueError("Campo lunghezza stringa errato ({0:02X} != 0x79)".format(len(input_message)))
 
         # Controllo versione software
         if input_message[4:6] != "01":
-            raise ValueError("Campo versione errato ({:02X} != 01)".format(int(input_message[4:6])))
+            raise ValueError("Campo versione errato ({0:02X} != 01)".format(int(input_message[4:6])))
 
         # Controllo IMEI
         if not input_message[6:21].isdigit():
-            raise ValueError("Campo IMEI non contiene solo numeri: ({:15s})".format(input_message[6:21]))
+            raise ValueError("Campo IMEI non contiene solo numeri: ({0:15s})".format(input_message[6:21]))
 
         # Controllo Autista
         if not input_message[21:25].isdigit():
-            raise ValueError("Campo Autista non contiene solo numeri: ({:4s})".format(input_message[21:25]))
+            raise ValueError("Campo Autista non contiene solo numeri: ({0:4s})".format(input_message[21:25]))
 
         # Controllo Evento (compreso tra 0 ed FF)
         if not 0 <= int(input_message[25:27], 16) <= 255:
-            raise ValueError("Valore del campo Evento non compreso tra 0 e 255 ({:2s})".format(input_message[25:27]))
+            raise ValueError("Valore del campo Evento non compreso tra 0 e 255 ({0:2s})".format(input_message[25:27]))
 
         # Controllo Evento (compreso tra 0 ed FF)
         if input_message[25:27].isalnum() and input_message[25:27].islower():
-            raise ValueError("Campo Evento non esadecimale maiuscolo: ({:2s})".format(input_message[25:27]))
+            raise ValueError("Campo Evento non esadecimale maiuscolo: ({0:2s})".format(input_message[25:27]))
 
         # Controllo data YYYYMMDD
         if not input_message[27:35].isdigit():
-            raise ValueError("Formato data non corretto presenza di caratteri: ({:8s})".format(input_message[27:35]))
+            raise ValueError("Formato data non corretto presenza di caratteri: ({0:8s})".format(input_message[27:35]))
         try:
             datetime.datetime.strptime(input_message[27:35], '%Y%m%d')
         except ValueError:
-            raise ValueError("Formato data non corretto: ({:8s})".format(input_message[27:35]))
+            raise ValueError("Formato data non corretto: ({0:8s})".format(input_message[27:35]))
 
         # Controllo ora
         if not input_message[35:41].isdigit():
-            raise ValueError("Formato ora non corretto presenza di caratteri: ({:8s})".format(input_message[35:41]))
+            raise ValueError("Formato ora non corretto presenza di caratteri: ({0:8s})".format(input_message[35:41]))
         try:
             datetime.datetime.strptime(input_message[35:41], '%H%M%S')
         except ValueError:
-            raise ValueError("Formato ora non corretto: ({:6s})".format(input_message[35:41]))
+            raise ValueError("Formato ora non corretto: ({0:6s})".format(input_message[35:41]))
 
         # Controllo satelliti
         if not input_message[41:43].isdigit():
             raise ValueError(
-                "Formato satelliti non corretto presenza di caratteri: ({:2s})".format(input_message[41:43])
+                "Formato satelliti non corretto presenza di caratteri: ({0:2s})".format(input_message[41:43])
             )
 
         # Controllo latitudine
         if not input_message[43:51].isdigit():
             raise ValueError(
-                "Formato latitudine non corretto presenza di caratteri: ({:9s})".format(input_message[43:52])
+                "Formato latitudine non corretto presenza di caratteri: ({0:9s})".format(input_message[43:52])
             )
-        if not -90 <= int(input_message[43:45], 10) <= 90:
-            raise ValueError("Formato latitudine non corretto fuori range +/-90°: ({:9s})".format(input_message[43:52]))
+        if not 0 <= int(input_message[43:45], 10) <= 90:
+            raise ValueError("Formato latitudine non corretto fuori range +/-90°: ({0:9s})".format(input_message[43:52]))
         if int(input_message[45:47], 10) >= 60:
-            raise ValueError("Formato latitudine non corretto fuori range > 59': ({:9s})".format(input_message[43:52]))
+            raise ValueError("Formato latitudine non corretto fuori range > 59': ({0:9s})".format(input_message[43:52]))
         if input_message[51] != 'N' and input_message[51] != 'S':
-            raise ValueError("Formato latitudine non corretto != N/S ({:9s})".format(input_message[43:52]))
+            raise ValueError("Formato latitudine non corretto != N/S ({0:9s})".format(input_message[43:52]))
 
         # Controllo longitudine
         if not input_message[52:61].isdigit():
             raise ValueError(
-                "Formato latitudine non corretto presenza di caratteri: ({:10s})".format(input_message[52:62])
+                "Formato latitudine non corretto presenza di caratteri: ({0:10s})".format(input_message[52:62])
             )
-        if not -180 <= int(input_message[52:55], 10) <= 180:
+        if not 0 <= int(input_message[52:55], 10) <= 180:
             raise ValueError(
-                "Formato latitudine non corretto fuori range +/-180°: ({:10s})".format(input_message[52:62])
+                "Formato latitudine non corretto fuori range +/-180°: ({0:10s})".format(input_message[52:62])
             )
         if int(input_message[55:57], 10) >= 60:
-            raise ValueError("Formato latitudine non corretto fuori range > 59': ({:10s})".format(input_message[52:62]))
+            raise ValueError("Formato latitudine non corretto fuori range > 59': ({0:10s})".format(input_message[52:62]))
         if input_message[61] != 'E' and input_message[61] != 'W':
-            raise ValueError("Formato latitudine non corretto != E/W ({:9s})".format(input_message[52:62]))
+            raise ValueError("Formato latitudine non corretto != E/W ({0:9s})".format(input_message[52:62]))
 
         # Controllo velocita'
         if not input_message[62:66].isdigit():
             raise ValueError(
-                "Formato velocita' non corretto presenza di caratteri: ({:4s})".format(input_message[62:66])
+                "Formato velocita' non corretto presenza di caratteri: ({0:4s})".format(input_message[62:66])
             )
 
         # Controllo litri serbatoio DX
         if not input_message[66:70].isdigit():
             raise ValueError(
-                "Formato litri DX non corretto presenza di caratteri: ({:4s})".format(input_message[66:70])
+                "Formato litri DX non corretto presenza di caratteri: ({0:4s})".format(input_message[66:70])
             )
 
         # Controllo litri serbatoio SX
         if not input_message[70:74].isdigit():
             raise ValueError(
-                "Formato litri SX non corretto presenza di caratteri: ({:4s})".format(input_message[70:74])
+                "Formato litri SX non corretto presenza di caratteri: ({0:4s})".format(input_message[70:74])
             )
 
         # Controllo litri serbatoio Frigo
         if not input_message[74:78].isdigit():
             raise ValueError(
-                "Formato litri FR non corretto presenza di caratteri: ({:4s})".format(input_message[74:78])
+                "Formato litri FR non corretto presenza di caratteri: ({0:4s})".format(input_message[74:78])
             )
 
         # Controllo tensione Batteria veicolo
         if not input_message[78:81].isdigit():
             raise ValueError(
-                "Formato Tensione Vin non corretto presenza di caratteri: ({:3s})".format(input_message[78:81])
+                "Formato Tensione Vin non corretto presenza di caratteri: ({0:3s})".format(input_message[78:81])
             )
 
         # Controllo tensione Batteria interna
         if not input_message[81:84].isdigit():
             raise ValueError(
-                "Formato Tensione Vbatt non corretto presenza di caratteri: ({:3s})".format(input_message[81:84])
+                "Formato Tensione Vbatt non corretto presenza di caratteri: ({0:3s})".format(input_message[81:84])
             )
 
         # Controllo litri immessi serbatoio DX
         if not input_message[84:88].isdigit():
             raise ValueError(
-                "Formato litri immessi DX non corretto presenza di caratteri: ({:4s})".format(input_message[84:88])
+                "Formato litri immessi DX non corretto presenza di caratteri: ({0:4s})".format(input_message[84:88])
             )
 
         # Controllo litri immessi serbatoio SX
         if not input_message[88:92].isdigit():
             raise ValueError(
-                "Formato litri immessi SX non corretto presenza di caratteri: ({:4s})".format(input_message[88:92])
+                "Formato litri immessi SX non corretto presenza di caratteri: ({0:4s})".format(input_message[88:92])
             )
 
         # Controllo litri immessi serbatoio Frigo
         if not input_message[92:96].isdigit():
             raise ValueError(
-                "Formato litri immessi Frigo non corretto presenza di caratteri: ({:4s})".format(input_message[92:96])
+                "Formato litri immessi Frigo non corretto presenza di caratteri: ({0:4s})".format(input_message[92:96])
             )
 
         # Controllo litri Totali IN/OUT
         if not input_message[96:100].isdigit():
             raise ValueError(
-                "Formato litri Totali IN/OUT non corretto presenza di caratteri: ({:4s})".format(input_message[96:100])
+                "Formato litri Totali IN/OUT non corretto presenza di caratteri: ({0:4s})".format(input_message[96:100])
             )
 
         # Controllo Tappo DX
         if not input_message[100] in ('1', '0', 'U', 'F'):
             raise ValueError(
-                "Formato Tappo DX non corretto presenza di caratteri non validi: ({:s})".format(input_message[100])
+                "Formato Tappo DX non corretto presenza di caratteri non validi: ({0:s})".format(input_message[100])
             )
 
         # Controllo Tappo SX
         if not input_message[101] in ('1', '0', 'U', 'F'):
             raise ValueError(
-                "Formato Tappo SX non corretto presenza di caratteri non validi: ({:s})".format(input_message[101])
+                "Formato Tappo SX non corretto presenza di caratteri non validi: ({0:s})".format(input_message[101])
             )
 
         # Controllo Tappo Frigo
         if not input_message[102] in ('1', '0', 'U', 'F'):
             raise ValueError(
-                "Formato Tappo Frigo non corretto presenza di caratteri non validi: ({:s})".format(input_message[102])
+                "Formato Tappo Frigo non corretto presenza di caratteri non validi: ({0:s})".format(input_message[102])
             )
 
         # Controllo Quadro
         if not input_message[103] in ('1', '0'):
             raise ValueError(
-                "Formato Quadro non corretto presenza di caratteri non validi: ({:s})".format(input_message[103])
+                "Formato Quadro non corretto presenza di caratteri non validi: ({0:s})".format(input_message[103])
             )
 
         # Controllo Allarme
         if not input_message[108] in ('1', '0'):
             raise ValueError(
-                "Formato Allarme non corretto presenza di caratteri non validi: ({:s})".format(input_message[108])
+                "Formato Allarme non corretto presenza di caratteri non validi: ({0:s})".format(input_message[108])
             )
 
         # Controllo Blocco tappi
         if not input_message[109] in ('1', '0'):
             raise ValueError(
-                "Formato Blocco Tappi non corretto presenza di caratteri non validi: ({:s})".format(input_message[109])
+                "Formato Blocco Tappi non corretto presenza di caratteri non validi: ({0:s})".format(input_message[109])
             )
 
         # Controllo Km percorsi
         if not input_message[116:121].isdigit():
             raise ValueError(
-                "Formato Km percorsi non corretto presenza di caratteri: ({:5s})".format(input_message[116:121])
+                "Formato Km percorsi non corretto presenza di caratteri: ({0:5s})".format(input_message[116:121])
             )
 
         self.imei = input_message[6:21]               # Inserisco l'IMEI verificato nella variabile imei
@@ -522,21 +556,79 @@ class ControlUnit():
 
         # Creo il bitpack per gli input
         bitfield_input = 0
+
+        # 00 - Unused [BIT_CUP_R BIT_CUP_RS]
+        # 01 - Fail
+        # 10 - Open
+        # 11 - Close
         if self.cup_r == ControlUnit.CUP_OPEN:
-            bitfield_input |= ControlUnit.BIT_CUP_R
+            bitfield_input |= ControlUnit.BIT_CUP_R0
+            bitfield_input &= ~ControlUnit.BIT_CUP_R1
+        elif self.cup_r == ControlUnit.CUP_CLOSE:
+            bitfield_input |= ControlUnit.BIT_CUP_R0
+            bitfield_input |= ControlUnit.BIT_CUP_R1
+        elif self.cup_r == ControlUnit.CUP_UNUSED:
+            bitfield_input &= ~ControlUnit.BIT_CUP_R0
+            bitfield_input &= ~ControlUnit.BIT_CUP_R1
+        elif self.cup_r == ControlUnit.CUP_FAIL:
+            bitfield_input &= ~ControlUnit.BIT_CUP_R0
+            bitfield_input |= ControlUnit.BIT_CUP_R1
+        else:
+            raise ValueError("cup_r value != CUP_OPEN/CUP_CLOSE/CUP_UNUSED/CUP_FAIL")
+
         if self.cup_l == ControlUnit.CUP_OPEN:
-            bitfield_input |= ControlUnit.BIT_CUP_L
+            bitfield_input |= ControlUnit.BIT_CUP_L0
+            bitfield_input &= ~ControlUnit.BIT_CUP_L1
+        elif self.cup_l == ControlUnit.CUP_CLOSE:
+            bitfield_input |= ControlUnit.BIT_CUP_L0
+            bitfield_input |= ControlUnit.BIT_CUP_L1
+        elif self.cup_l == ControlUnit.CUP_UNUSED:
+            bitfield_input &= ~ControlUnit.BIT_CUP_L0
+            bitfield_input &= ~ControlUnit.BIT_CUP_L1
+        elif self.cup_l == ControlUnit.CUP_FAIL:
+            bitfield_input &= ~ControlUnit.BIT_CUP_L0
+            bitfield_input |= ControlUnit.BIT_CUP_L1
+        else:
+            raise ValueError("cup_l value != CUP_OPEN/CUP_CLOSE/CUP_UNUSED/CUP_FAIL")
+
         if self.cup_f == ControlUnit.CUP_OPEN:
-            bitfield_input |= ControlUnit.BIT_CUP_F
+            bitfield_input |= ControlUnit.BIT_CUP_F0
+            bitfield_input &= ~ControlUnit.BIT_CUP_F1
+        elif self.cup_f == ControlUnit.CUP_CLOSE:
+            bitfield_input |= ControlUnit.BIT_CUP_F0
+            bitfield_input |= ControlUnit.BIT_CUP_F1
+        elif self.cup_f == ControlUnit.CUP_UNUSED:
+            bitfield_input &= ~ControlUnit.BIT_CUP_F0
+            bitfield_input &= ~ControlUnit.BIT_CUP_F1
+        elif self.cup_f == ControlUnit.CUP_FAIL:
+            bitfield_input &= ~ControlUnit.BIT_CUP_F0
+            bitfield_input |= ControlUnit.BIT_CUP_F1
+        else:
+            raise ValueError("cup_l value != CUP_OPEN/CUP_CLOSE/CUP_UNUSED/CUP_FAIL")
+
         if self.engine == ControlUnit.ENGINE_ON:
             bitfield_input |= ControlUnit.BIT_ENGINE
+        elif self.engine == ControlUnit.ENGINE_OFF:
+            bitfield_input &= ~ControlUnit.BIT_ENGINE
+        else:
+            raise ValueError("engine value != ENGINE_ON/ENGINE_OFF")
 
         # Creo il bitpack per gli output
         bitfield_output = 0
+
         if self.alarm == ControlUnit.ALARM_ARMED:
             bitfield_output |= ControlUnit.BIT_ALARM
+        elif self.alarm == ControlUnit.ALARM_UNARMED:
+            bitfield_output &= ~ControlUnit.BIT_ALARM
+        else:
+            raise ValueError("alarm value != ALARM_ARMED/ALARM_UNARMED")
+
         if self.cup_lock == ControlUnit.CAPS_LOCKED:
             bitfield_output |= ControlUnit.BIT_CUP_LOCK
+        if self.cup_lock == ControlUnit.CAPS_UNLOCKED:
+            bitfield_output &= ~ControlUnit.BIT_CUP_LOCK
+        else:
+            raise ValueError("cup_lock value != CAPS_LOCKED/CAPS_UNLOCKED")
 
         #  Valori di un pacchetto dati standard
         values = (
@@ -565,11 +657,11 @@ class ControlUnit():
         )
         packed_data = self.s_mex_1.pack(*values)
 
-        print 'Original values:{}'.format(values)
-        print 'Original size  :{}'.format(len(binascii.hexlify(packed_data)))
-        print 'Format string  :{}'.format(self.s_mex_1.format)
-        print 'Uses           :{}'.format(self.s_mex_1.size, 'bytes')
-        print 'Packed Value   :{}'.format(binascii.hexlify(packed_data).upper())
+        print 'Original values:{0}'.format(values)
+        print 'Original size  :{0}'.format(len(binascii.hexlify(packed_data)))
+        print 'Format string  :{0}'.format(self.s_mex_1.format)
+        print 'Uses           :{0}'.format(self.s_mex_1.size, 'bytes')
+        print 'Packed Value   :{0}'.format(binascii.hexlify(packed_data).upper())
 
         self.output_packet = packed_data
 
@@ -591,7 +683,7 @@ class ControlUnit():
         # Poi assegni i vari elementi della tupla, agli attributi della classe BinaryProtocol ereditati
         # dal padre ControlUnit
 
-        self.imei = "{:05d}{:05d}{:05d}".format(unpacked_data[2], unpacked_data[3], unpacked_data[4])
+        self.imei = "{0:05d}{1:05d}{2:05d}".format(unpacked_data[2], unpacked_data[3], unpacked_data[4])
         self.driver = unpacked_data[5]
         self.event = unpacked_data[6]
         self.unixtime = unpacked_data[7]
@@ -613,20 +705,38 @@ class ControlUnit():
         self.distance_travelled = unpacked_data[23] / 10.0
 
         # Decodifico il bitpack per gli input
-        if (bitfield_input & ControlUnit.BIT_CUP_R) != 0:
+
+        # 00 - Unused [BIT_CUP_R BIT_CUP_RS]
+        # 01 - Fail
+        # 10 - Open
+        # 11 - Close
+        if (bitfield_input & ControlUnit.BIT_CUP_R0) != 0 and (bitfield_input & ControlUnit.BIT_CUP_R1) == 0:
             self.cup_r = ControlUnit.CUP_OPEN
-        else:
+        elif (bitfield_input & ControlUnit.BIT_CUP_R0) != 0 and (bitfield_input & ControlUnit.BIT_CUP_R1) != 0:
             self.cup_r = ControlUnit.CUP_CLOSE
+        elif (bitfield_input & ControlUnit.BIT_CUP_R0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_R1) == 0:
+            self.cup_r = ControlUnit.CUP_UNUSED
+        elif (bitfield_input & ControlUnit.BIT_CUP_R0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_R1) != 0:
+            self.cup_r = ControlUnit.CUP_FAIL
 
-        if (bitfield_input & ControlUnit.BIT_CUP_L) != 0:
+        if (bitfield_input & ControlUnit.BIT_CUP_L0) != 0 and (bitfield_input & ControlUnit.BIT_CUP_L1) == 0:
             self.cup_l = ControlUnit.CUP_OPEN
-        else:
+        elif (bitfield_input & ControlUnit.BIT_CUP_L0) != 0 and (bitfield_input & ControlUnit.BIT_CUP_L1) != 0:
             self.cup_l = ControlUnit.CUP_CLOSE
+        elif (bitfield_input & ControlUnit.BIT_CUP_L0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_L1) == 0:
+            self.cup_l = ControlUnit.CUP_UNUSED
+        elif (bitfield_input & ControlUnit.BIT_CUP_L0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_L1) != 0:
+            self.cup_l = ControlUnit.CUP_FAIL
 
-        if (bitfield_input & ControlUnit.BIT_CUP_F) != 0:
+        if (bitfield_input & ControlUnit.BIT_CUP_F0) != 0 and (bitfield_input & ControlUnit.BIT_CUP_F1) == 0:
             self.cup_f = ControlUnit.CUP_OPEN
-        else:
+        elif (bitfield_input & ControlUnit.BIT_CUP_F0) != 0 and (bitfield_input & ControlUnit.BIT_CUP_F1) != 0:
             self.cup_f = ControlUnit.CUP_CLOSE
+        elif (bitfield_input & ControlUnit.BIT_CUP_F0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_F1) == 0:
+            self.cup_f = ControlUnit.CUP_UNUSED
+        elif (bitfield_input & ControlUnit.BIT_CUP_F0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_F1) != 0:
+            self.cup_f = ControlUnit.CUP_FAIL
+
 
         if (bitfield_input & ControlUnit.BIT_ENGINE) != 0:
             self.engine = ControlUnit.ENGINE_ON

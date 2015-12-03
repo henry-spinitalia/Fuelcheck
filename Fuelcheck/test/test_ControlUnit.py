@@ -394,7 +394,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.input_gasoline_tot = 8888
         ctrl_unit.cup_r = ControlUnit.CUP_CLOSE
         ctrl_unit.cup_l = ControlUnit.CUP_OPEN
-        ctrl_unit.cup_f = ControlUnit.CUP_CLOSE
+        ctrl_unit.cup_f = ControlUnit.CUP_FAIL
         ctrl_unit.engine = ControlUnit.ENGINE_ON
         ctrl_unit.alarm = ControlUnit.ALARM_UNARMED
         ctrl_unit.cup_lock = ControlUnit.CAPS_UNLOCKED
@@ -405,7 +405,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
-            "A57901351535057252702112107201511141152091141416602N012359949E011220013002400325842650026003700488880101"
+            "A57901351535057252702112107201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
             "UUUU00UUUUUU03651"
         )
 
@@ -650,7 +650,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.input_gasoline_l = 600.3
         ctrl_unit.input_gasoline_f = 700.4
         ctrl_unit.input_gasoline_tot = 8888
-        ctrl_unit.cup_r = ControlUnit.CUP_CLOSE
+        ctrl_unit.cup_r = ControlUnit.CUP_FAIL
         ctrl_unit.cup_l = ControlUnit.CUP_OPEN
         ctrl_unit.cup_f = ControlUnit.CUP_CLOSE
         ctrl_unit.engine = ControlUnit.ENGINE_ON
@@ -664,7 +664,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
             )
         )
 
@@ -690,7 +690,7 @@ class TestControlUnit(unittest.TestCase):
         # Ora controllo la traduzione
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+                '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
             )
         )
 
@@ -711,7 +711,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.input_gasoline_l, 600.3)
         self.assertEqual(ctrl_unit.input_gasoline_f, 700.4)
         self.assertEqual(ctrl_unit.input_gasoline_tot, 8888)
-        self.assertEqual(ctrl_unit.cup_r, ControlUnit.CUP_CLOSE)
+        self.assertEqual(ctrl_unit.cup_r, ControlUnit.CUP_FAIL)
         self.assertEqual(ctrl_unit.cup_l, ControlUnit.CUP_OPEN)
         self.assertEqual(ctrl_unit.cup_f, ControlUnit.CUP_CLOSE)
         self.assertEqual(ctrl_unit.engine, ControlUnit.ENGINE_ON)
@@ -720,6 +720,28 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.distance_travelled, 365.1)
         self.assertEqual(result, True)
 
+    def test_direct_loop(self):
+
+        ctrl_unit = ControlUnit()
+
+        input = "A57901351535057249088454500201512011056360000000000N000000000E0000008200920096111419" \
+                "00000000000000000FF1UUUU10UUUUUU00000"
+
+        ctrl_unit.decode_ascii(input)
+        ctrl_unit.encode_binary()
+
+        ctrl_unit.decode_binary(ctrl_unit.output_packet)
+        ctrl_unit.encode_ascii()
+
+        self.assertEqual(input, ctrl_unit.output_packet)
+
+    def test_deprecation_warning(self):
+
+        ctrl_unit = ControlUnit()
+
+        input = "A57901356496042398040000000201512021722030000000000N000000000E000000240018003412838600000000000000000101FUUU00UUUUUU00000"
+
+        ctrl_unit.decode_ascii(input)
 
 if __name__ == '__main__':
     unittest.main()
