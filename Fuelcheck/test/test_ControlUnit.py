@@ -36,6 +36,9 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.alarm = ctrl_unit.ALARM_UNARMED
         ctrl_unit.cup_lock = ctrl_unit.CAPS_UNLOCKED
         ctrl_unit.distance_travelled = 365.1
+        ctrl_unit.gas_station = 5
+        ctrl_unit.text_message = "Come va la trasmissione binaria?"
+        ctrl_unit.plate = "AB324LR"
 
         # Provo a sbagliare lunghezza del campo IMEI, poi lo rendo alfanumerico, poi lo correggo
         ctrl_unit.imei = 35153505725270L
@@ -371,6 +374,52 @@ class TestControlUnit(unittest.TestCase):
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
 
+        # Vediamo l'ID della stazione di servizio
+        ctrl_unit.gas_station = "a"
+        with self.assertRaises(TypeError):
+            ctrl_unit.check_values()
+        ctrl_unit.gas_station = 256
+        with self.assertRaises(ValueError):
+            ctrl_unit.check_values()
+        ctrl_unit.gas_station = 5
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+
+        # Vediamo il messaggio di test per la chat
+        ctrl_unit.text_message = 2.12
+        with self.assertRaises(ValueError):
+            ctrl_unit.check_values()
+        ctrl_unit.text_message = 256
+        with self.assertRaises(ValueError):
+            ctrl_unit.check_values()
+        ctrl_unit.text_message = str("5")
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.text_message = "Questo messaggio di testo può essere arbritariamente lungo e contenere qualsivoglia" \
+                                 " carattere codificato in UTF-8"
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.text_message = ""
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+
+        # Vediamo la targa
+        ctrl_unit.plate = 2.12
+        with self.assertRaises(ValueError):
+            ctrl_unit.check_values()
+        ctrl_unit.plate = 256
+        with self.assertRaises(ValueError):
+            ctrl_unit.check_values()
+        ctrl_unit.plate = str("5")
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.plate = "La targa dovrebbe essere una stringa, di lunghezza variabile, vedi ad esempio i rimorchi"
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+        ctrl_unit.plate = ""
+        result = ctrl_unit.check_values()
+        self.assertEqual(result, True)
+
     def test_encode_ascii(self):
 
         ctrl_unit = ControlUnit()
@@ -399,7 +448,11 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.alarm = ControlUnit.ALARM_UNARMED
         ctrl_unit.cup_lock = ControlUnit.CAPS_UNLOCKED
         ctrl_unit.distance_travelled = 365.1
+        ctrl_unit.gas_station = 5
+        ctrl_unit.text_message = "Questo è un messaggio di testo"
+        ctrl_unit.plate = "AB324LR"
 
+        # Evento di base
         result = ctrl_unit.encode_ascii()
 
         self.assertEqual(result, True)
@@ -409,10 +462,44 @@ class TestControlUnit(unittest.TestCase):
             "UUUU00UUUUUU03651"
         )
 
+        # Rifornimento
+        ctrl_unit.event = 13
+        result = ctrl_unit.encode_ascii()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            "A57901351535057252702112113201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "UUUU00UUUUUU0365105"
+        )
+
+        # Messaggio di testo
+        ctrl_unit.event = 14
+        result = ctrl_unit.encode_ascii()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            "A57901351535057252702112114201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "UUUU00UUUUUU03651Questo è un messaggio di testo$"
+        )
+
+        # Messaggio di rifornimento da cisterna
+        ctrl_unit.event = 15
+        result = ctrl_unit.encode_ascii()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            "A57901351535057252702112115201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "UUUU00UUUUUU03651AB324LR$"
+        )
+
     def test_decode_ascii(self):
 
         ctrl_unit = ControlUnit()
 
+        # Evento di base
         packet = "A57901351535057252702112107201511141152091141416602N012359949E01122001300240032584265002600370048888"
         packet += "0101UUUU00UUUUUU03651"
 
@@ -629,6 +716,42 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.unused_outputs, "UUUUUU")
         self.assertEqual(ctrl_unit.distance_travelled, 365.1)
 
+        # Rifornimento
+        packet = "A57901351535057252702112113201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet += "0101UUUU00UUUUUU0365105"
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:121] + "0D")  # Test del campo DIST, NUM
+
+        # Ora provo la conversione di tutti i parametri ed analizzo l'ultimo introdotto
+        result = ctrl_unit.decode_ascii(packet)
+        self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.gas_station, 5)
+
+        # Messaggio di testo
+        packet = "A57901351535057252702112114201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet += "0101UUUU00UUUUUU03651Questo è un messaggio di testo$"
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:121] + "Questo è un messaggio di testo")  # Test del campo CHAT, STR
+
+        # Ora provo la conversione di tutti i parametri ed analizzo l'ultimo introdotto
+        result = ctrl_unit.decode_ascii(packet)
+        self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.text_message, "Questo è un messaggio di test")
+
+        # Messaggio di rifornimento da cisterna
+        packet = "A57901351535057252702112115201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet += "0101UUUU00UUUUUU03651AB123CD$"
+
+        with self.assertRaises(ValueError):
+            ctrl_unit.decode_ascii(packet[0:121] + "AB123CD")  # Test del campo TARG, STR
+
+        # Ora provo la conversione di tutti i parametri ed analizzo l'ultimo introdotto
+        result = ctrl_unit.decode_ascii(packet)
+        self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.plate, "AB123CD")
+
     def test_encode_binary(self):
 
         ctrl_unit = ControlUnit()
@@ -657,8 +780,48 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.alarm = ControlUnit.ALARM_UNARMED
         ctrl_unit.cup_lock = ControlUnit.CAPS_UNLOCKED
         ctrl_unit.distance_travelled = 365.1
+        ctrl_unit.gas_station = 5
+        ctrl_unit.text_message = "Come va la trasmissione binaria?"
+        ctrl_unit.plate = "AB324LR"
 
+        # Evento di base
         result = ctrl_unit.encode_binary()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            binascii.unhexlify(
+                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+            )
+        )
+
+        # Rifornimento
+        ctrl_unit.event = 13
+        result = ctrl_unit.encode_binary()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            binascii.unhexlify(
+                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+            )
+        )
+
+        # Messaggio di testo
+        ctrl_unit.event = 14
+        result = ctrl_unit.encode_binary()
+
+        self.assertEqual(result, True)
+        self.assertEqual(
+            ctrl_unit.output_packet,
+            binascii.unhexlify(
+                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+            )
+        )
+
+        # Messaggio di rifornimento da cisterna
+        ctrl_unit.event = 15
+        result = ctrl_unit.encode_ascii()
 
         self.assertEqual(result, True)
         self.assertEqual(

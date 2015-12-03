@@ -80,6 +80,9 @@ class ControlUnit():
         self.cup_lock = 0                     # Stato del blocco tappi
         self.unused_outputs = "UUUUUU"
         self.distance_travelled = 0.0         # Distanza percorsa dalla mezzanotte
+        self.gas_station = 0                  # Id del distribuitore di benzina
+        self.text_message = ""                # Messaggio chat
+        self.plate = ""                       # Targa del mezzo in rifornimento
         self.output_packet = ""
 
     def check_values(self):
@@ -227,6 +230,8 @@ class ControlUnit():
             cup_r_final = 'U'
         elif self.cup_r == ControlUnit.CUP_FAIL:
             cup_r_final = 'F'
+        else:
+            raise ValueError("Valore di cup_r diverso da OPEN/CLOSE/UNUSED/FAIL")
 
         # Converto il tappo sinistro
         if self.cup_l == ControlUnit.CUP_OPEN:
@@ -237,6 +242,8 @@ class ControlUnit():
             cup_l_final = 'U'
         elif self.cup_l == ControlUnit.CUP_FAIL:
             cup_l_final = 'F'
+        else:
+            raise ValueError("Valore di cup_l diverso da OPEN/CLOSE/UNUSED/FAIL")
 
         # Converto il tappo frigo
         if self.cup_f == ControlUnit.CUP_OPEN:
@@ -247,6 +254,8 @@ class ControlUnit():
             cup_f_final = 'U'
         elif self.cup_f == ControlUnit.CUP_FAIL:
             cup_f_final = 'F'
+        else:
+            raise ValueError("Valore di cup_f diverso da OPEN/CLOSE/UNUSED/FAIL")
 
         output_packet = self.ascii_header
         output_packet += "00"
@@ -347,7 +356,9 @@ class ControlUnit():
                 "Formato latitudine non corretto presenza di caratteri: ({0:9s})".format(input_message[43:52])
             )
         if not 0 <= int(input_message[43:45], 10) <= 90:
-            raise ValueError("Formato latitudine non corretto fuori range +/-90°: ({0:9s})".format(input_message[43:52]))
+            raise ValueError(
+                "Formato latitudine non corretto fuori range +/-90°: ({0:9s})".format(input_message[43:52])
+            )
         if int(input_message[45:47], 10) >= 60:
             raise ValueError("Formato latitudine non corretto fuori range > 59': ({0:9s})".format(input_message[43:52]))
         if input_message[51] != 'N' and input_message[51] != 'S':
@@ -363,7 +374,9 @@ class ControlUnit():
                 "Formato latitudine non corretto fuori range +/-180°: ({0:10s})".format(input_message[52:62])
             )
         if int(input_message[55:57], 10) >= 60:
-            raise ValueError("Formato latitudine non corretto fuori range > 59': ({0:10s})".format(input_message[52:62]))
+            raise ValueError(
+                "Formato latitudine non corretto fuori range > 59': ({0:10s})".format(input_message[52:62])
+            )
         if input_message[61] != 'E' and input_message[61] != 'W':
             raise ValueError("Formato latitudine non corretto != E/W ({0:9s})".format(input_message[52:62]))
 
@@ -672,11 +685,25 @@ class ControlUnit():
     def decode_binary(self, input_message):
         """Prende un messaggio codificato in binario e ne ricava tutte le variabili"""
 
-        # Per prima cosa usi unpack per trasformare il messaggio binario in una tupla di valori
+        # Trasformo i primi 50 bytes tramite unpack, che sono quelli fissi
         try:
-            unpacked_data = self.s_mex_1.unpack(input_message)
+            unpacked_data = self.s_mex_1.unpack(input_message[:50])
         except:
-            raise ValueError("Lunghezza del pacchetto errata")
+            raise ValueError("Lunghezza del pacchetto errata [Type 1]")
+
+        # Nel caso si tratti dell'evento 13, il pacchetto si allunga di un byte
+        if unpacked_data[4] == 13:
+            try:
+                unpacked_data = self.s_mex_2.unpack(input_message)
+            except:
+                raise ValueError("Lunghezza del pacchetto errata [Type 2]")
+
+        # Nel caso si tratti dell'evento 14 o 15, il pacchetto si allunga di x bytes che sono una stringa
+        if unpacked_data[4] == 14 or unpacked_data[4] == 15:
+            try:
+                unpacked_data = self.s_mex_3.unpack(input_message)
+            except:
+                raise ValueError("Lunghezza del pacchetto errata [Type 3]")
 
         # Ora ne controllo la lunghezza
         if unpacked_data[0] != self.s_mex_1.size:
@@ -705,6 +732,18 @@ class ControlUnit():
         bitfield_input = unpacked_data[19]
         bitfield_output = unpacked_data[20]
         self.distance_travelled = unpacked_data[21] / 10.0
+
+        # Se un rifornimento salvo anche l'id della stazione
+        if self.event == 13:
+            self.gas_station = unpacked_data[22]
+
+        # Se un messaggio di testo, lo memorizzo
+        if self.event == 14:
+            self.text_message = unpacked_data[22]
+
+        # Se un rifornimento da cisterna, salvo la targa
+        if self.event == 15:
+            self.plate = unpacked_data[22]
 
         # Decodifico il bitpack per gli input
 
@@ -738,7 +777,6 @@ class ControlUnit():
             self.cup_f = ControlUnit.CUP_UNUSED
         elif (bitfield_input & ControlUnit.BIT_CUP_F0) == 0 and (bitfield_input & ControlUnit.BIT_CUP_F1) != 0:
             self.cup_f = ControlUnit.CUP_FAIL
-
 
         if (bitfield_input & ControlUnit.BIT_ENGINE) != 0:
             self.engine = ControlUnit.ENGINE_ON
