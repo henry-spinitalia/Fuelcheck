@@ -573,6 +573,24 @@ class ControlUnit():
 
         self.distance_travelled = (float(input_message[116:121])/10)
 
+        # Caso di Evento 13 Rifornimento
+        if input_message[25:27] == '13':
+            if not 0 <= int(input_message[121:123], 10) <= 99:
+                raise ValueError("Valore del campo Rifornimento non compreso tra 0 e 255 ({0:2s})".format(input_message[121:123]))
+            elif input_message[121:123].isalnum() and input_message[121:123].islower():
+                raise ValueError("Campo Evento non esadecimale maiuscolo: ({0:2s})".format(input_message[121:123]))
+            self.gas_station = int(input_message[121:123])
+
+        # Caso di Evento 14 Rifornimento
+        if input_message[25:27] == '14':
+            self.text_message = input_message[121:]
+            self.text_message = self.text_message.replace('$', '')
+
+        # Caso di Evento 15 Rifornimento
+        if input_message[25:27] == '15':
+            self.plate = input_message[121:]
+            self.plate = self.plate.replace('$', '')
+
         return True
 
     def encode_binary(self):
