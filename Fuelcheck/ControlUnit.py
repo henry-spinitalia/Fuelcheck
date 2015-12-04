@@ -49,9 +49,10 @@ class ControlUnit():
         self.binary_version = 2               # Sempre pari a 2 per la versione binaria
 
         # Codica binaria
-        self.s_mex_1 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBH')   # Messaggio di base
-        self.s_mex_2 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBHB')  # Messaggio con id distributore
-        self.s_mex_3 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBHs')  # Messaggio con messaggio di testo
+        self.s_mex_1 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBH')      # Messaggio di base
+        self.s_mex_2 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBHB')     # Messaggio con id distributore
+        self.s_mex_3 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBH130s')  # Messaggio con messaggio di testo
+        self.s_mex_4 = struct.Struct('<BBQHBIBffHHHHHHHHHHBBH20s')   # Messaggio con targa
 
         # Variabili di stato della centralina
         self.imei = 123451234512345L          # 351535057249088 - 15 char len
@@ -192,6 +193,20 @@ class ControlUnit():
             raise ValueError(
                 "L'attributo distance_travelled deve essere un numero intero o decimale positivo minore di 9999.9"
             )
+        if type(self.gas_station) is not int:
+            raise TypeError("L'attributo gas_station deve essere un intero")
+        if not 0 <= self.gas_station <= 99:
+            raise ValueError("Il valore dell'attributo gas_station deve essere compreso tra 0 e 99")
+
+        if type(self.text_message) is not str:
+            raise TypeError("L'attributo text_message deve essere una stringa unicode")
+        if len(self.text_message) > 130:
+            raise ValueError("La lunghezza dell'attributo text_message deve essere di 130 caratteri al massimo")
+
+        if type(self.plate) is not str:
+            raise TypeError("L'attributo plate deve essere una stringa unicode")
+        if len(self.plate) > 20:
+            raise ValueError("La lunghezza dell'attributo plate deve essere di 20 caratteri al massimo")
 
         return True
 
@@ -645,32 +660,125 @@ class ControlUnit():
         else:
             raise ValueError("cup_lock value != CAPS_LOCKED/CAPS_UNLOCKED")
 
-        #  Valori di un pacchetto dati standard
-        values = (
-            self.s_mex_1.size,			                                          # LEN
-            0x02,                                                                 # VER
-            self.imei,                                                            # IMEI
-            self.driver,                                                          # DRVN
-            self.event,                                                           # EVTN
-            self.unixtime,                                                        # UTC_Unixtime
-            self.sat,                                                             # GSAT
-            self.lat,                                                             # LAT
-            self.lon,                                                             # LON
-            round(self.speed * 10),                                               # SPD
-            round(self.gasoline_r * 10),                                          # Gasoline R
-            round(self.gasoline_l * 10),                                          # Gasoline L
-            round(self.gasoline_f * 10),                                          # Gasoline F
-            round(self.vin * 10),                                                 # MBAT
-            round(self.vbatt * 100),                                              # BBAT
-            round(self.input_gasoline_r * 10),                                    # In gasoline R
-            round(self.input_gasoline_l * 10),                                    # In gasoline L
-            round(self.input_gasoline_f * 10),                                    # In gasoline F
-            self.input_gasoline_tot,                                              # In gasoline TOT
-            bitfield_input,                                                       # Inputs Bitpacked
-            bitfield_output,                                                      # Outputs Bitpacked
-            round(self.distance_travelled * 10)                                   # HSZZ
-        )
-        packed_data = self.s_mex_1.pack(*values)
+        # Se si tratta di un evento 13
+        if self.event == 13:
+
+            #  Valori di un pacchetto dati standard
+            values = (
+                self.s_mex_2.size,			                                          # LEN
+                0x02,                                                                 # VER
+                self.imei,                                                            # IMEI
+                self.driver,                                                          # DRVN
+                self.event,                                                           # EVTN
+                self.unixtime,                                                        # UTC_Unixtime
+                self.sat,                                                             # GSAT
+                self.lat,                                                             # LAT
+                self.lon,                                                             # LON
+                round(self.speed * 10),                                               # SPD
+                round(self.gasoline_r * 10),                                          # Gasoline R
+                round(self.gasoline_l * 10),                                          # Gasoline L
+                round(self.gasoline_f * 10),                                          # Gasoline F
+                round(self.vin * 10),                                                 # MBAT
+                round(self.vbatt * 100),                                              # BBAT
+                round(self.input_gasoline_r * 10),                                    # In gasoline R
+                round(self.input_gasoline_l * 10),                                    # In gasoline L
+                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                self.input_gasoline_tot,                                              # In gasoline TOT
+                bitfield_input,                                                       # Inputs Bitpacked
+                bitfield_output,                                                      # Outputs Bitpacked
+                round(self.distance_travelled * 10),                                  # HSZZ
+                self.gas_station                                                      # Station ID
+            )
+            packed_data = self.s_mex_2.pack(*values)
+
+        elif self.event == 14:
+
+            #  Valori di un pacchetto dati standard
+            values = (
+                self.s_mex_3.size,			                                          # LEN
+                0x02,                                                                 # VER
+                self.imei,                                                            # IMEI
+                self.driver,                                                          # DRVN
+                self.event,                                                           # EVTN
+                self.unixtime,                                                        # UTC_Unixtime
+                self.sat,                                                             # GSAT
+                self.lat,                                                             # LAT
+                self.lon,                                                             # LON
+                round(self.speed * 10),                                               # SPD
+                round(self.gasoline_r * 10),                                          # Gasoline R
+                round(self.gasoline_l * 10),                                          # Gasoline L
+                round(self.gasoline_f * 10),                                          # Gasoline F
+                round(self.vin * 10),                                                 # MBAT
+                round(self.vbatt * 100),                                              # BBAT
+                round(self.input_gasoline_r * 10),                                    # In gasoline R
+                round(self.input_gasoline_l * 10),                                    # In gasoline L
+                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                self.input_gasoline_tot,                                              # In gasoline TOT
+                bitfield_input,                                                       # Inputs Bitpacked
+                bitfield_output,                                                      # Outputs Bitpacked
+                round(self.distance_travelled * 10),                                  # HSZZ
+                self.text_message                                                     # Text message
+            )
+            packed_data = self.s_mex_3.pack(*values)
+
+        elif self.event == 15:
+
+            #  Valori di un pacchetto dati standard
+            values = (
+                self.s_mex_4.size,			                                          # LEN
+                0x02,                                                                 # VER
+                self.imei,                                                            # IMEI
+                self.driver,                                                          # DRVN
+                self.event,                                                           # EVTN
+                self.unixtime,                                                        # UTC_Unixtime
+                self.sat,                                                             # GSAT
+                self.lat,                                                             # LAT
+                self.lon,                                                             # LON
+                round(self.speed * 10),                                               # SPD
+                round(self.gasoline_r * 10),                                          # Gasoline R
+                round(self.gasoline_l * 10),                                          # Gasoline L
+                round(self.gasoline_f * 10),                                          # Gasoline F
+                round(self.vin * 10),                                                 # MBAT
+                round(self.vbatt * 100),                                              # BBAT
+                round(self.input_gasoline_r * 10),                                    # In gasoline R
+                round(self.input_gasoline_l * 10),                                    # In gasoline L
+                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                self.input_gasoline_tot,                                              # In gasoline TOT
+                bitfield_input,                                                       # Inputs Bitpacked
+                bitfield_output,                                                      # Outputs Bitpacked
+                round(self.distance_travelled * 10),                                  # HSZZ
+                self.plate                                                            # Plate
+            )
+            packed_data = self.s_mex_4.pack(*values)
+
+        else:
+
+            #  Valori di un pacchetto dati standard
+            values = (
+                self.s_mex_1.size,			                                          # LEN
+                0x02,                                                                 # VER
+                self.imei,                                                            # IMEI
+                self.driver,                                                          # DRVN
+                self.event,                                                           # EVTN
+                self.unixtime,                                                        # UTC_Unixtime
+                self.sat,                                                             # GSAT
+                self.lat,                                                             # LAT
+                self.lon,                                                             # LON
+                round(self.speed * 10),                                               # SPD
+                round(self.gasoline_r * 10),                                          # Gasoline R
+                round(self.gasoline_l * 10),                                          # Gasoline L
+                round(self.gasoline_f * 10),                                          # Gasoline F
+                round(self.vin * 10),                                                 # MBAT
+                round(self.vbatt * 100),                                              # BBAT
+                round(self.input_gasoline_r * 10),                                    # In gasoline R
+                round(self.input_gasoline_l * 10),                                    # In gasoline L
+                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                self.input_gasoline_tot,                                              # In gasoline TOT
+                bitfield_input,                                                       # Inputs Bitpacked
+                bitfield_output,                                                      # Outputs Bitpacked
+                round(self.distance_travelled * 10)                                   # HSZZ
+            )
+            packed_data = self.s_mex_1.pack(*values)
 
         print 'Original values:{0}'.format(values)
         print 'Original size  :{0}'.format(len(binascii.hexlify(packed_data)))
@@ -699,18 +807,18 @@ class ControlUnit():
                 raise ValueError("Lunghezza del pacchetto errata [Type 2]")
 
         # Nel caso si tratti dell'evento 14 o 15, il pacchetto si allunga di x bytes che sono una stringa
-        if unpacked_data[4] == 14 or unpacked_data[4] == 15:
+        elif unpacked_data[4] == 14:
             try:
                 unpacked_data = self.s_mex_3.unpack(input_message)
             except:
                 raise ValueError("Lunghezza del pacchetto errata [Type 3]")
 
-        # Ora ne controllo la lunghezza
-        if unpacked_data[0] != self.s_mex_1.size:
-            raise ValueError("Lunghezza del pacchetto errata")
-
-        # Poi assegni i vari elementi della tupla, agli attributi della classe BinaryProtocol ereditati
-        # dal padre ControlUnit
+        # Nel caso si tratti dell'evento 14 o 15, il pacchetto si allunga di x bytes che sono una stringa
+        elif unpacked_data[4] == 15:
+            try:
+                unpacked_data = self.s_mex_4.unpack(input_message)
+            except:
+                raise ValueError("Lunghezza del pacchetto errata [Type 4]")
 
         self.imei = unpacked_data[2]
         self.driver = unpacked_data[3]
@@ -739,11 +847,11 @@ class ControlUnit():
 
         # Se un messaggio di testo, lo memorizzo
         if self.event == 14:
-            self.text_message = unpacked_data[22]
+            self.text_message = unpacked_data[22].strip("\x00")
 
         # Se un rifornimento da cisterna, salvo la targa
         if self.event == 15:
-            self.plate = unpacked_data[22]
+            self.plate = unpacked_data[22].strip("\x00")
 
         # Decodifico il bitpack per gli input
 

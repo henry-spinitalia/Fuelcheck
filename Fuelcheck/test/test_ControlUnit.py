@@ -378,7 +378,10 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.gas_station = "a"
         with self.assertRaises(TypeError):
             ctrl_unit.check_values()
-        ctrl_unit.gas_station = 256
+        ctrl_unit.gas_station = 100
+        with self.assertRaises(ValueError):
+            ctrl_unit.check_values()
+        ctrl_unit.gas_station = -1
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
         ctrl_unit.gas_station = 5
@@ -387,16 +390,23 @@ class TestControlUnit(unittest.TestCase):
 
         # Vediamo il messaggio di test per la chat
         ctrl_unit.text_message = 2.12
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             ctrl_unit.check_values()
         ctrl_unit.text_message = 256
+        with self.assertRaises(TypeError):
+            ctrl_unit.check_values()
+        ctrl_unit.text_message = 256L
+        with self.assertRaises(TypeError):
+            ctrl_unit.check_values()
+        ctrl_unit.text_message = "Questo messaggio di testo può essere arbitrariamente lungo e contenere al massimo" \
+                                 " 130 caratteri, ma questa eccede il limite fissato di 14 bytes"
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
-        ctrl_unit.text_message = str("5")
+        ctrl_unit.text_message = "5"
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
-        ctrl_unit.text_message = "Questo messaggio di testo può essere arbritariamente lungo e contenere qualsivoglia" \
-                                 " carattere codificato in UTF-8"
+        ctrl_unit.text_message = "Questo messaggio di testo può essere arbitrariamente lungo e contenere al massimo " \
+                                 "130 caratteri, e questo non eccede il limite!!!"
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
         ctrl_unit.text_message = ""
@@ -405,15 +415,21 @@ class TestControlUnit(unittest.TestCase):
 
         # Vediamo la targa
         ctrl_unit.plate = 2.12
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             ctrl_unit.check_values()
         ctrl_unit.plate = 256
+        with self.assertRaises(TypeError):
+            ctrl_unit.check_values()
+        ctrl_unit.plate = 256L
+        with self.assertRaises(TypeError):
+            ctrl_unit.check_values()
+        ctrl_unit.plate = "La targa dovrebbe essere una stringa di max 20 caratteri (vedi ad esempio i rimorchi)"
         with self.assertRaises(ValueError):
             ctrl_unit.check_values()
-        ctrl_unit.plate = str("5")
+        ctrl_unit.plate = "5"
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
-        ctrl_unit.plate = "La targa dovrebbe essere una stringa, di lunghezza variabile, vedi ad esempio i rimorchi"
+        ctrl_unit.plate = "20 caratteri sono OK"
         result = ctrl_unit.check_values()
         self.assertEqual(result, True)
         ctrl_unit.plate = ""
@@ -449,7 +465,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.cup_lock = ControlUnit.CAPS_UNLOCKED
         ctrl_unit.distance_travelled = 365.1
         ctrl_unit.gas_station = 5
-        ctrl_unit.text_message = "Questo è un messaggio di testo"
+        ctrl_unit.text_message = "Questo e' un messaggio di testo"
         ctrl_unit.plate = "AB324LR"
 
         # Evento di base
@@ -481,7 +497,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             "A57901351535057252702112114201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
-            "UUUU00UUUUUU03651Questo è un messaggio di testo$"
+            "UUUU00UUUUUU03651Questo e' un messaggio di testo$"
         )
 
         # Messaggio di rifornimento da cisterna
@@ -730,7 +746,7 @@ class TestControlUnit(unittest.TestCase):
 
         # Messaggio di testo
         packet = "A57901351535057252702112114201511141152091141416602N012359949E01122001300240032584265002600370048888"
-        packet += "0101UUUU00UUUUUU03651Questo è un messaggio di testo$"
+        packet += "0101UUUU00UUUUUU03651Questo e' un messaggio di testo$"
 
         with self.assertRaises(ValueError):
             ctrl_unit.decode_ascii(packet[0:121] + "Questo è un messaggio di testo")  # Test del campo CHAT, STR
@@ -738,7 +754,7 @@ class TestControlUnit(unittest.TestCase):
         # Ora provo la conversione di tutti i parametri ed analizzo l'ultimo introdotto
         result = ctrl_unit.decode_ascii(packet)
         self.assertEqual(result, True)
-        self.assertEqual(ctrl_unit.text_message, "Questo è un messaggio di test")
+        self.assertEqual(ctrl_unit.text_message, "Questo e' un messaggio di testo")
 
         # Messaggio di rifornimento da cisterna
         packet = "A57901351535057252702112115201511141152091141416602N012359949E01122001300240032584265002600370048888"
@@ -791,7 +807,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+                '32025EB13622B83F0100610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
             )
         )
 
@@ -803,7 +819,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+                '33025EB13622B83F010061040D692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E05'
             )
         )
 
@@ -815,19 +831,23 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+                'B4025EB13622B83F010061040E692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '436F6D65207661206C6120747261736D697373696F6E652062696E617269613F000000000000000000000000000000000000'
+                '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+                '000000000000000000000000000000000000000000000000000000000000'
             )
         )
 
         # Messaggio di rifornimento da cisterna
         ctrl_unit.event = 15
-        result = ctrl_unit.encode_ascii()
+        result = ctrl_unit.encode_binary()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+                '46025EB13622B83F010061040F692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '41423332344C5200000000000000000000000000'
             )
         )
 
@@ -853,10 +873,11 @@ class TestControlUnit(unittest.TestCase):
         # Ora controllo la traduzione
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                '32025eb13622b83f0100610407692047560b00c72642409949417000d107ba0ba30f0201aa018a1373175c1bb8226e00430e'
+                '32025EB13622B83F0100610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
             )
         )
 
+        self.assertEqual(result, True)
         self.assertEqual(ctrl_unit.imei, 351535057252702L)
         self.assertEqual(ctrl_unit.driver, 1121)
         self.assertEqual(ctrl_unit.event, 7)
@@ -881,16 +902,52 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.alarm, ControlUnit.ALARM_UNARMED)
         self.assertEqual(ctrl_unit.cup_lock, ControlUnit.CAPS_UNLOCKED)
         self.assertEqual(ctrl_unit.distance_travelled, 365.1)
+
+        # Ora controllo la traduzione dell'evento 13
+        result = ctrl_unit.decode_binary(
+            binascii.unhexlify(
+                '33025EB13622B83F010061040D692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E05'
+            )
+        )
+
         self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.event, 13)
+        self.assertEqual(ctrl_unit.gas_station, 5)
+
+        # Ora controllo la traduzione dell'evento 14
+        result = ctrl_unit.decode_binary(
+            binascii.unhexlify(
+                'B4025EB13622B83F010061040E692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '436F6D65207661206C6120747261736D697373696F6E652062696E617269613F000000000000000000000000000000000000'
+                '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+                '000000000000000000000000000000000000000000000000000000000000'
+            )
+        )
+
+        self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.event, 14)
+        self.assertEqual(ctrl_unit.text_message, "Come va la trasmissione binaria?")
+
+        # Ora controllo la traduzione dell'evento 15
+        result = ctrl_unit.decode_binary(
+            binascii.unhexlify(
+                '46025EB13622B83F010061040F692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '41423332344C5200000000000000000000000000'
+            )
+        )
+
+        self.assertEqual(result, True)
+        self.assertEqual(ctrl_unit.event, 15)
+        self.assertEqual(ctrl_unit.plate, "AB324LR")
 
     def test_direct_loop(self):
 
         ctrl_unit = ControlUnit()
 
-        input = "A57901351535057249088454500201512011056360000000000N000000000E0000008200920096111419" \
-                "00000000000000000FF1UUUU10UUUUUU00000"
+        input_mex = "A57901351535057249088454500201512011056360000000000N000000000E0000008200920096111419" \
+                    "00000000000000000FF1UUUU10UUUUUU00000"
 
-        ctrl_unit.decode_ascii(input)
+        ctrl_unit.decode_ascii(input_mex)
         ctrl_unit.encode_binary()
 
         ctrl_unit.decode_binary(ctrl_unit.output_packet)
@@ -902,9 +959,10 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit = ControlUnit()
 
-        input = "A57901356496042398040000000201512021722030000000000N000000000E000000240018003412838600000000000000000101FUUU00UUUUUU00000"
+        input_mex = "A57901356496042398040000000201512021722030000000000N000000000E0000002400180034128386" \
+                    "00000000000000000101FUUU00UUUUUU00000"
 
-        ctrl_unit.decode_ascii(input)
+        ctrl_unit.decode_ascii(input_mex)
 
 if __name__ == '__main__':
     unittest.main()
