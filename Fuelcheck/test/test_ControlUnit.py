@@ -745,7 +745,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.gas_station, 5)
 
         # Messaggio di testo
-        packet = "A57901351535057252702112114201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet = "A59901351535057252702112114201511141152091141416602N012359949E01122001300240032584265002600370048888"
         packet += "0101UUUU00UUUUUU03651Questo e' un messaggio di testo$"
 
         with self.assertRaises(ValueError):
@@ -757,7 +757,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.text_message, "Questo e' un messaggio di testo")
 
         # Messaggio di rifornimento da cisterna
-        packet = "A57901351535057252702112115201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet = "A58101351535057252702112115201511141152091141416602N012359949E01122001300240032584265002600370048888"
         packet += "0101UUUU00UUUUUU03651AB123CD$"
 
         with self.assertRaises(ValueError):
