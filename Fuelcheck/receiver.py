@@ -7,8 +7,7 @@
 #        | BBox |------------------>|     Me     |------------------>| MULE |
 #        |      |<------------------|            |<------------------|      |
 #        +------+                   +------------+                   +------+
-#
-
+# http://krondo.com/wp-content/uploads/2009/08/twisted-intro.html
 
 from twisted.internet.protocol import DatagramProtocol
 from twisted.web.client import getPage
