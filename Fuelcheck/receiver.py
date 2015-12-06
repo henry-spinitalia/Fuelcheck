@@ -23,8 +23,8 @@ class BBoxDecoder(DatagramProtocol):
     """Riceve un messaggio compresso dalle centraline e lo spedisce al server"""
 
     C_TXS_URL = "http://151.1.80.42/src/api/v1?rawData="
-    C_OUT_PATH = "/mnt/nas/temp/"
-    C_OUT_FILE = "/mnt/nas/temp/fuelcheck_traslator.log"
+    C_OUT_PATH = "/mnt/nas/temp/Fuelcheck/"
+    C_OUT_FILE = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator.log"
 
     def __init__(self):
 

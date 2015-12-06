@@ -712,19 +712,19 @@ class ControlUnit():
                 self.sat,                                                             # GSAT
                 self.lat,                                                             # LAT
                 self.lon,                                                             # LON
-                round(self.speed * 10),                                               # SPD
-                round(self.gasoline_r * 10),                                          # Gasoline R
-                round(self.gasoline_l * 10),                                          # Gasoline L
-                round(self.gasoline_f * 10),                                          # Gasoline F
-                round(self.vin * 10),                                                 # MBAT
-                round(self.vbatt * 100),                                              # BBAT
-                round(self.input_gasoline_r * 10),                                    # In gasoline R
-                round(self.input_gasoline_l * 10),                                    # In gasoline L
-                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                int(round(self.speed * 10)),                                          # SPD
+                int(round(self.gasoline_r * 10)),                                     # Gasoline R
+                int(round(self.gasoline_l * 10)),                                     # Gasoline L
+                int(round(self.gasoline_f * 10)),                                     # Gasoline F
+                int(round(self.vin * 10)),                                            # MBAT
+                int(round(self.vbatt * 100)),                                         # BBAT
+                int(round(self.input_gasoline_r * 10)),                               # In gasoline R
+                int(round(self.input_gasoline_l * 10)),                               # In gasoline L
+                int(round(self.input_gasoline_f * 10)),                               # In gasoline F
                 self.input_gasoline_tot,                                              # In gasoline TOT
                 bitfield_input,                                                       # Inputs Bitpacked
                 bitfield_output,                                                      # Outputs Bitpacked
-                round(self.distance_travelled * 10),                                  # HSZZ
+                int(round(self.distance_travelled * 10)),                             # HSZZ
                 self.gas_station                                                      # Station ID
             )
             packed_data = self.s_mex_2.pack(*values)
@@ -742,19 +742,19 @@ class ControlUnit():
                 self.sat,                                                             # GSAT
                 self.lat,                                                             # LAT
                 self.lon,                                                             # LON
-                round(self.speed * 10),                                               # SPD
-                round(self.gasoline_r * 10),                                          # Gasoline R
-                round(self.gasoline_l * 10),                                          # Gasoline L
-                round(self.gasoline_f * 10),                                          # Gasoline F
-                round(self.vin * 10),                                                 # MBAT
-                round(self.vbatt * 100),                                              # BBAT
-                round(self.input_gasoline_r * 10),                                    # In gasoline R
-                round(self.input_gasoline_l * 10),                                    # In gasoline L
-                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                int(round(self.speed * 10)),                                          # SPD
+                int(round(self.gasoline_r * 10)),                                     # Gasoline R
+                int(round(self.gasoline_l * 10)),                                     # Gasoline L
+                int(round(self.gasoline_f * 10)),                                     # Gasoline F
+                int(round(self.vin * 10)),                                            # MBAT
+                int(round(self.vbatt * 100)),                                         # BBAT
+                int(round(self.input_gasoline_r * 10)),                               # In gasoline R
+                int(round(self.input_gasoline_l * 10)),                               # In gasoline L
+                int(round(self.input_gasoline_f * 10)),                               # In gasoline F
                 self.input_gasoline_tot,                                              # In gasoline TOT
                 bitfield_input,                                                       # Inputs Bitpacked
-                bitfield_output,                                                      # Outputs Bitpacked
-                round(self.distance_travelled * 10),                                  # HSZZ
+                bitfield_output,                                                       # Outputs Bitpacked
+                int(round(self.distance_travelled * 10)),                             # HSZZ
                 self.text_message                                                     # Text message
             )
             packed_data = self.s_mex_3.pack(*values)
@@ -772,19 +772,19 @@ class ControlUnit():
                 self.sat,                                                             # GSAT
                 self.lat,                                                             # LAT
                 self.lon,                                                             # LON
-                round(self.speed * 10),                                               # SPD
-                round(self.gasoline_r * 10),                                          # Gasoline R
-                round(self.gasoline_l * 10),                                          # Gasoline L
-                round(self.gasoline_f * 10),                                          # Gasoline F
-                round(self.vin * 10),                                                 # MBAT
-                round(self.vbatt * 100),                                              # BBAT
-                round(self.input_gasoline_r * 10),                                    # In gasoline R
-                round(self.input_gasoline_l * 10),                                    # In gasoline L
-                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                int(round(self.speed * 10)),                                          # SPD
+                int(round(self.gasoline_r * 10)),                                     # Gasoline R
+                int(round(self.gasoline_l * 10)),                                     # Gasoline L
+                int(round(self.gasoline_f * 10)),                                     # Gasoline F
+                int(round(self.vin * 10)),                                            # MBAT
+                int(round(self.vbatt * 100)),                                         # BBAT
+                int(round(self.input_gasoline_r * 10)),                               # In gasoline R
+                int(round(self.input_gasoline_l * 10)),                               # In gasoline L
+                int(round(self.input_gasoline_f * 10)),                               # In gasoline F
                 self.input_gasoline_tot,                                              # In gasoline TOT
                 bitfield_input,                                                       # Inputs Bitpacked
-                bitfield_output,                                                      # Outputs Bitpacked
-                round(self.distance_travelled * 10),                                  # HSZZ
+                bitfield_output,                                                       # Outputs Bitpacked
+                int(round(self.distance_travelled * 10)),                             # HSZZ
                 self.plate                                                            # Plate
             )
             packed_data = self.s_mex_4.pack(*values)
@@ -802,19 +802,19 @@ class ControlUnit():
                 self.sat,                                                             # GSAT
                 self.lat,                                                             # LAT
                 self.lon,                                                             # LON
-                round(self.speed * 10),                                               # SPD
-                round(self.gasoline_r * 10),                                          # Gasoline R
-                round(self.gasoline_l * 10),                                          # Gasoline L
-                round(self.gasoline_f * 10),                                          # Gasoline F
-                round(self.vin * 10),                                                 # MBAT
-                round(self.vbatt * 100),                                              # BBAT
-                round(self.input_gasoline_r * 10),                                    # In gasoline R
-                round(self.input_gasoline_l * 10),                                    # In gasoline L
-                round(self.input_gasoline_f * 10),                                    # In gasoline F
+                int(round(self.speed * 10)),                                          # SPD
+                int(round(self.gasoline_r * 10)),                                     # Gasoline R
+                int(round(self.gasoline_l * 10)),                                     # Gasoline L
+                int(round(self.gasoline_f * 10)),                                     # Gasoline F
+                int(round(self.vin * 10)),                                            # MBAT
+                int(round(self.vbatt * 100)),                                         # BBAT
+                int(round(self.input_gasoline_r * 10)),                               # In gasoline R
+                int(round(self.input_gasoline_l * 10)),                               # In gasoline L
+                int(round(self.input_gasoline_f * 10)),                               # In gasoline F
                 self.input_gasoline_tot,                                              # In gasoline TOT
                 bitfield_input,                                                       # Inputs Bitpacked
-                bitfield_output,                                                      # Outputs Bitpacked
-                round(self.distance_travelled * 10)                                   # HSZZ
+                bitfield_output,                                                       # Outputs Bitpacked
+                int(round(self.distance_travelled * 10))                              # HSZZ
             )
             packed_data = self.s_mex_1.pack(*values)
 

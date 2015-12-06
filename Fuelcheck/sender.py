@@ -18,7 +18,16 @@
 #   Unittest - https://twistedmatrix.com/documents/current/core/howto/trial.html
 #   Opensourcing in the right way - https://www.jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-
 #   right-way/
-#
+
+# Debolezze di questa implementazione
+#   - Necessaria una risoluzione DNS ad ogni invio
+#     - Risolvo una volta al giorno
+#     - In caso di errore annullo la cache
+#   - Esiste un delay ed un carico CPU associato all'avvio dell'interprete Python
+#   - Non è criptato
+#   - Siamo indicativamente a 115 in RX e 143 in TX, ovvero 258, * 60 * 180 + * 550, ovvero 2.79MB/mese
+
+
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from optparse import OptionParser
@@ -54,7 +63,7 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
             self.output_file = ""
 
         self.exit_code = 0           # Diciamo che va tutto bene
-        self.timeout = 5             # Per qualsiasi operazione c'è un timeout di 20s
+        self.timeout = 30            # Per qualsiasi operazione c'è un timeout di 20s
         self.timeout_id = None       # id del timeout
 
     def start_tout(self, resp, mex):
