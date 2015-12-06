@@ -479,35 +479,35 @@ class TestControlUnit(unittest.TestCase):
         )
 
         # Rifornimento
-        ctrl_unit.event = 13
+        ctrl_unit.event = 0x13
         result = ctrl_unit.encode_ascii()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
-            "A57901351535057252702112113201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "A57B01351535057252702112113201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
             "UUUU00UUUUUU0365105"
         )
 
         # Messaggio di testo
-        ctrl_unit.event = 14
+        ctrl_unit.event = 0x14
         result = ctrl_unit.encode_ascii()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
-            "A57901351535057252702112114201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "A59901351535057252702112114201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
             "UUUU00UUUUUU03651Questo e' un messaggio di testo$"
         )
 
         # Messaggio di rifornimento da cisterna
-        ctrl_unit.event = 15
+        ctrl_unit.event = 0x15
         result = ctrl_unit.encode_ascii()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
-            "A57901351535057252702112115201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "A58101351535057252702112115201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
             "UUUU00UUUUUU03651AB324LR$"
         )
 
@@ -953,7 +953,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.decode_binary(ctrl_unit.output_packet)
         ctrl_unit.encode_ascii()
 
-        self.assertEqual(input, ctrl_unit.output_packet)
+        self.assertEqual(input_mex, ctrl_unit.output_packet)
 
     def test_deprecation_warning(self):
 

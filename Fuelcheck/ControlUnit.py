@@ -302,8 +302,28 @@ class ControlUnit():
         output_packet += "UUUUUU"
         output_packet += "{0:05.0f}".format(self.distance_travelled*10)
 
-        if len(output_packet) != 121:
-            return False
+
+        # Caso di rifornimento
+        if self.event == 0x13:
+            output_packet += "{0:02d}".format(self.gas_station)
+            # Calcolo la lunghezza e la inserisco in esadecimale
+            output_packet = output_packet[0:2] + "{0:02X}".format(len(output_packet)) + output_packet[4:]
+
+        # Caso di messaggio
+        elif self.event == 0x14:
+            output_packet += self.text_message + '$'
+            # Calcolo la lunghezza e la inserisco in esadecimale
+            output_packet = output_packet[0:2] + "{0:02X}".format(len(output_packet)) + output_packet[4:]
+
+        # Caso di rifornimento cisterna
+        elif self.event == 0x15:
+            output_packet += self.plate + '$'
+            # Calcolo la lunghezza e la inserisco in esadecimale
+            output_packet = output_packet[0:2] + "{0:02X}".format(len(output_packet)) + output_packet[4:]
+
+        else:
+            if len(output_packet) != 121:
+                return False
 
         # Calcolo la lunghezza e la inserisco in esadecimale
         output_packet = output_packet[0:2] + "{0:02X}".format(len(output_packet)) + output_packet[4:]
