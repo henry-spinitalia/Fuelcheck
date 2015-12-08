@@ -442,7 +442,7 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit.imei = 351535057252702L
         ctrl_unit.driver = 1121
-        ctrl_unit.event = 7
+        ctrl_unit.event = 10
         ctrl_unit.unixtime = 1447501929
         ctrl_unit.sat = 11
         ctrl_unit.lat = 41.694336
@@ -474,7 +474,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
-            "A57901351535057252702112107201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
+            "A5790135153505725270211210A201511141152091141416602N012359949E0112200130024003258426500260037004888801F1"
             "UUUU00UUUUUU03651"
         )
 
@@ -516,7 +516,7 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit = ControlUnit()
 
         # Evento di base
-        packet = "A57901351535057252702112107201511141152091141416602N012359949E01122001300240032584265002600370048888"
+        packet = "A5790135153505725270211210A201511141152091141416602N012359949E01122001300240032584265002600370048888"
         packet += "0101UUUU00UUUUUU03651"
 
         # Test del controllo del campo HDR, diverso da A5
@@ -707,7 +707,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(ctrl_unit.ascii_header, "A5")
         self.assertEqual(ctrl_unit.imei, 351535057252702L)
         self.assertEqual(ctrl_unit.driver, 1121)
-        self.assertEqual(ctrl_unit.event, 7)
+        self.assertEqual(ctrl_unit.event, 10)
         self.assertEqual(ctrl_unit.unixtime, 1447501929)
         self.assertEqual(ctrl_unit.sat, 11)
         self.assertAlmostEqual(ctrl_unit.lat, 41.694337, 6)
@@ -774,7 +774,7 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit.imei = 351535057252702L
         ctrl_unit.driver = 1121
-        ctrl_unit.event = 7
+        ctrl_unit.event = 10
         ctrl_unit.unixtime = 1447501929
         ctrl_unit.sat = 11
         ctrl_unit.lat = 41.694336
@@ -807,7 +807,7 @@ class TestControlUnit(unittest.TestCase):
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '32025EB13622B83F0100610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '32025EB13622B83F010061040A692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
             )
         )
 
@@ -859,28 +859,28 @@ class TestControlUnit(unittest.TestCase):
         with self.assertRaises(ValueError):
             ctrl_unit.decode_binary(
                 binascii.unhexlify(
-                    '300251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430EAA'
+                    '300251898CC5DECD61040A692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430EAA'
                 )
             )
 
         with self.assertRaises(ValueError):
             ctrl_unit.decode_binary(
                 binascii.unhexlify(
-                    '200251898CC5DECD610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
+                    '200251898CC5DECD61040A692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8225000430E'
                 )
             )
 
         # Ora controllo la traduzione
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                '32025EB13622B83F0100610407692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '32025EB13622B83F010061040A692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
             )
         )
 
         self.assertEqual(result, True)
         self.assertEqual(ctrl_unit.imei, 351535057252702L)
         self.assertEqual(ctrl_unit.driver, 1121)
-        self.assertEqual(ctrl_unit.event, 7)
+        self.assertEqual(ctrl_unit.event, 10)
         self.assertEqual(ctrl_unit.unixtime, 1447501929)
         self.assertEqual(ctrl_unit.sat, 11)
         self.assertAlmostEqual(ctrl_unit.lat, 41.694336, 6)
