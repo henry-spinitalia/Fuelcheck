@@ -519,7 +519,7 @@ class ControlUnit():
 
         self.imei = long(input_message[6:21])         # Inserisco l'IMEI verificato nella variabile imei
         self.driver = int(input_message[21:25])       # Inserisco l'autista verificato nella variabile driver
-        self.event = int(input_message[25:27])        # Inserisco l'evento verificato nella variabile event
+        self.event = int(input_message[25:27], 16)    # Inserisco l'evento verificato nella variabile event
 
         # genero la stringa contenente YYYYMMDD e HHMMSS
         self.unixtime = calendar.timegm(datetime.datetime.strptime(input_message[27:41], "%Y%m%d%H%M%S").timetuple())
