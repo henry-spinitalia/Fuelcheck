@@ -812,26 +812,26 @@ class TestControlUnit(unittest.TestCase):
         )
 
         # Rifornimento
-        ctrl_unit.event = 13
+        ctrl_unit.event = 0x13
         result = ctrl_unit.encode_binary()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '33025EB13622B83F010061040D692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E05'
+                '33025EB13622B83F0100610413692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E05'
             )
         )
 
         # Messaggio di testo
-        ctrl_unit.event = 14
+        ctrl_unit.event = 0x14
         result = ctrl_unit.encode_binary()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                'B4025EB13622B83F010061040E692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                'B4025EB13622B83F0100610414692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
                 '436F6D65207661206C6120747261736D697373696F6E652062696E617269613F000000000000000000000000000000000000'
                 '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                 '000000000000000000000000000000000000000000000000000000000000'
@@ -839,14 +839,14 @@ class TestControlUnit(unittest.TestCase):
         )
 
         # Messaggio di rifornimento da cisterna
-        ctrl_unit.event = 15
+        ctrl_unit.event = 0x15
         result = ctrl_unit.encode_binary()
 
         self.assertEqual(result, True)
         self.assertEqual(
             ctrl_unit.output_packet,
             binascii.unhexlify(
-                '46025EB13622B83F010061040F692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '46025EB13622B83F0100610415692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
                 '41423332344C5200000000000000000000000000'
             )
         )
@@ -906,18 +906,18 @@ class TestControlUnit(unittest.TestCase):
         # Ora controllo la traduzione dell'evento 13
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                '33025EB13622B83F010061040D692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E05'
+                '33025EB13622B83F0100610413692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E05'
             )
         )
 
         self.assertEqual(result, True)
-        self.assertEqual(ctrl_unit.event, 13)
+        self.assertEqual(ctrl_unit.event, 0x13)
         self.assertEqual(ctrl_unit.gas_station, 5)
 
         # Ora controllo la traduzione dell'evento 14
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                'B4025EB13622B83F010061040E692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                'B4025EB13622B83F0100610414692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
                 '436F6D65207661206C6120747261736D697373696F6E652062696E617269613F000000000000000000000000000000000000'
                 '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                 '000000000000000000000000000000000000000000000000000000000000'
@@ -925,19 +925,19 @@ class TestControlUnit(unittest.TestCase):
         )
 
         self.assertEqual(result, True)
-        self.assertEqual(ctrl_unit.event, 14)
+        self.assertEqual(ctrl_unit.event, 0x14)
         self.assertEqual(ctrl_unit.text_message, "Come va la trasmissione binaria?")
 
         # Ora controllo la traduzione dell'evento 15
         result = ctrl_unit.decode_binary(
             binascii.unhexlify(
-                '46025EB13622B83F010061040F692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
+                '46025EB13622B83F0100610415692047560B00C72642409949417000D107BA0BA30F0201AA018A1373175C1BB8226E00430E'
                 '41423332344C5200000000000000000000000000'
             )
         )
 
         self.assertEqual(result, True)
-        self.assertEqual(ctrl_unit.event, 15)
+        self.assertEqual(ctrl_unit.event, 0x15)
         self.assertEqual(ctrl_unit.plate, "AB324LR")
 
     def test_direct_loop(self):

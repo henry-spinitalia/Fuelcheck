@@ -699,7 +699,7 @@ class ControlUnit():
             raise ValueError("cup_lock value != CAPS_LOCKED/CAPS_UNLOCKED")
 
         # Se si tratta di un evento 13
-        if self.event == 13:
+        if self.event == 0x13:
 
             #  Valori di un pacchetto dati standard
             values = (
@@ -729,7 +729,7 @@ class ControlUnit():
             )
             packed_data = self.s_mex_2.pack(*values)
 
-        elif self.event == 14:
+        elif self.event == 0x14:
 
             #  Valori di un pacchetto dati standard
             values = (
@@ -759,7 +759,7 @@ class ControlUnit():
             )
             packed_data = self.s_mex_3.pack(*values)
 
-        elif self.event == 15:
+        elif self.event == 0x15:
 
             #  Valori di un pacchetto dati standard
             values = (
@@ -838,21 +838,21 @@ class ControlUnit():
             raise ValueError("Lunghezza del pacchetto errata [Type 1]")
 
         # Nel caso si tratti dell'evento 13, il pacchetto si allunga di un byte
-        if unpacked_data[4] == 13:
+        if unpacked_data[4] == 0x13:
             try:
                 unpacked_data = self.s_mex_2.unpack(input_message)
             except:
                 raise ValueError("Lunghezza del pacchetto errata [Type 2]")
 
         # Nel caso si tratti dell'evento 14 o 15, il pacchetto si allunga di x bytes che sono una stringa
-        elif unpacked_data[4] == 14:
+        elif unpacked_data[4] == 0x14:
             try:
                 unpacked_data = self.s_mex_3.unpack(input_message)
             except:
                 raise ValueError("Lunghezza del pacchetto errata [Type 3]")
 
         # Nel caso si tratti dell'evento 14 o 15, il pacchetto si allunga di x bytes che sono una stringa
-        elif unpacked_data[4] == 15:
+        elif unpacked_data[4] == 0x15:
             try:
                 unpacked_data = self.s_mex_4.unpack(input_message)
             except:
@@ -880,15 +880,15 @@ class ControlUnit():
         self.distance_travelled = unpacked_data[21] / 10.0
 
         # Se un rifornimento salvo anche l'id della stazione
-        if self.event == 13:
+        if self.event == 0x13:
             self.gas_station = unpacked_data[22]
 
         # Se un messaggio di testo, lo memorizzo
-        if self.event == 14:
+        if self.event == 0x14:
             self.text_message = unpacked_data[22].strip("\x00")
 
         # Se un rifornimento da cisterna, salvo la targa
-        if self.event == 15:
+        if self.event == 0x15:
             self.plate = unpacked_data[22].strip("\x00")
 
         # Decodifico il bitpack per gli input
