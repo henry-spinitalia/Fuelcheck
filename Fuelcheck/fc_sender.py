@@ -26,6 +26,15 @@
 #   - Esiste un delay ed un carico CPU associato all'avvio dell'interprete Python
 #   - Non è criptato
 #   - Siamo indicativamente a 115 in RX e 143 in TX, ovvero 258, * 60 * 180 + * 550, ovvero 2.79MB/mese
+#   - Da misure effettuate abbiamo:
+#     - 71bytes DNS query
+#     - 87bytes DNS response
+#     - 84bytes UDP send
+#     - 40bytes UDP response
+#     - 282Bytes a transazione, 3.52MB/mese
+#     - A questo si aggiunge il ping, pari a 28 * 60 * 180 + 550 * 30 * 28 = 0.72MB/mese
+#     - Si puo' eliminare la risoluzione pari a 158 -> 1.71MB
+#     - Questo porterebbe i consumi a 1.34MB/mese!!!
 
 
 from twisted.internet.protocol import DatagramProtocol
@@ -37,6 +46,16 @@ import sys
 
 class CtrlUnitDatagramProtocol(DatagramProtocol):
 
+    ERR_NO_DNS_RESOLUTION = 1
+    ERR_NO_SERVER_FOUND = 2
+    ERR_UNABLE_TO_CONN = 3
+    ERR_UNABLE_TO_SEND = 4
+    ERR_UNABLE_DEC_ASCII = 5
+    ERR_UNABLE_ENC_BINARY = 6
+    ERR_UNABLE_TO_RESOLVE = 7
+    ERR_UNABLE_TO_CONNECT = 8
+    ERR_CONNECTION_LOST = 9
+
     def __init__(self, parameters):
 
         ctrl_unit = ControlUnit()
@@ -44,12 +63,12 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
         try:
             ctrl_unit.decode_ascii(options.message)
         except (ValueError, TypeError):
-            self.stop_try(1)
+            self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_DEC_ASCII)
 
         try:
             ctrl_unit.encode_binary()
         except (ValueError, TypeError):
-            self.stop_try(2)
+            self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_ENC_BINARY)
 
         # Prendo i parametri
         self.packet = ctrl_unit.output_packet
@@ -68,71 +87,71 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
 
     def start_tout(self, resp, mex):
 
-        print "Start tout {0}".format(mex)
+        print "  start tout '{0} / {1}'".format(mex, resp)
         self.timeout_id = reactor.callLater(self.timeout, self.stop_try, resp)
 
     def clear_tout(self):
 
-        print "Clear tout"
+        print "  clear tout"
         try:
             if self.timeout_id.active():
                 self.timeout_id.cancel()
         except Exception, e:
-            print("Got {0} in datagramReceived().".format(e.message))
-            pass
+            print("Error in clear_tout(): {0}".format(e.message))
 
     def got_ip(self, ip):
-
-        print "Got IP"
 
         # Per prima cosa elimino il timeout se presente
         self.clear_tout()
 
-        print "IP of '{0}' is {1}".format(self.server_address, ip)
+        print "2. Got IP"
+
+        print "  IP of '{0}' is {1}".format(self.server_address, ip)
         # All'avvio del protocollo si connette ed invia un datagramma
         # Non è possibile sapere se c'e' un problema finchè non invio qls ( non è connesso!)
         # Ci pensa sendDatagradm ad impostare il timeout
-        self.transport.connect(ip, 9123)
-        self.send_datagram()
-        self.start_tout(3, "Connection and datagram send")
 
-    def no_ip(self, failure):
-
-        print "Unable to resolve server {0}".format(failure)
-        self.stop_try(1)
-
-    def connectionRefused(self):
-
-        print "Unable to connect"
-        self.stop_try(4)
-
-    def connectionLost(self):
-
-        print "Connection lost"
-        self.stop_try(4)
-
-    def startProtocol(self):
-
-        print "Start protocol"
-
-        # Come prima cosa risolvo il nome
-        # TODO: devo unserire una cache nella risoluzione
-        reactor.resolve(self.server_address).addCallbacks(self.got_ip, self.no_ip)
-        self.start_tout(5, "IP resolution")
-
-    def send_datagram(self):
-
-        print "Send datagram"
+        try:
+            self.transport.connect(ip, 9123)
+        except Exception, e:
+            print("Got {0} in got_ip()".format(e.message))
+            self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_CONN)
 
         try:
             self.transport.write(self.packet)
         except Exception, e:
-            print("Got {0} in send_datagram()".format(e.message))
-            self.stop_try(3)
+            print("Got {0} in got_ip()".format(e.message))
+            self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_SEND)
+
+        self.start_tout(CtrlUnitDatagramProtocol.ERR_NO_SERVER_FOUND, "Connection and datagram send")
+
+    def no_ip(self, failure):
+
+        print "Unable to resolve server {0}".format(failure)
+        self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_RESOLVE)
+
+    def connectionRefused(self):
+
+        print "Unable to connect"
+        self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_CONNECT)
+
+    def connectionLost(self):
+
+        print "Connection lost"
+        self.stop_try(CtrlUnitDatagramProtocol.ERR_CONNECTION_LOST)
+
+    def startProtocol(self):
+
+        print "1. Start protocol"
+
+        # Come prima cosa risolvo il nome
+        # TODO: devo unserire una cache nella risoluzione
+        reactor.resolve(self.server_address).addCallbacks(self.got_ip, self.no_ip)
+        self.start_tout(CtrlUnitDatagramProtocol.ERR_NO_DNS_RESOLUTION, "IP resolution")
 
     def stop_try(self, exit_code):
 
-        print "Stop try"
+        print "  stop try ({0})".format(exit_code)
 
         self.exit_code = exit_code
         if self.transport:
@@ -144,10 +163,10 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
 
     def datagramReceived(self, datagram, host):
 
-        print 'Datagram received: ', repr(datagram)
-
         # Per prima cosa elimino il timeout se presente
         self.clear_tout()
+
+        print '3. Datagram received: ', repr(datagram)
 
         # Risposta ricevuta dal server
         if self.output_enabled:
