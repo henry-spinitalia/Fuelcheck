@@ -74,9 +74,12 @@ class BBoxDecoder(DatagramProtocol):
             transaction['port'] = ""
 
         if 'error' in transaction:
-            print "{},{}".format(
+            print "{},{},{},{},{}".format(
                 time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
-                transaction['error']
+                transaction['error'],
+                transaction['input_binary_datagram'],
+                transaction['host'],
+                transaction['port']
             )
         else:
             print "{} - {} - {:15d} - {:02X} - {} - {}".format(
@@ -127,6 +130,8 @@ class BBoxDecoder(DatagramProtocol):
         transaction = dict()
         transaction['time_of_arrival'] = calendar.timegm(time.gmtime())
         transaction['input_binary_datagram'] = binascii.hexlify(data).upper()
+        transaction['host'] = host
+        transaction['port'] = port
 
         # La decodifico da binario in variabili interne
         try:
@@ -152,8 +157,6 @@ class BBoxDecoder(DatagramProtocol):
             transaction['imei'] = self.ctrl_unit.imei
             transaction['event'] = self.ctrl_unit.event
             transaction['event_date'] = calendar.timegm(time.gmtime(self.ctrl_unit.unixtime))
-            transaction['host'] = host
-            transaction['port'] = port
 
             # Li codifico in ASCII
             try:
