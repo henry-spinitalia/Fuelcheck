@@ -107,6 +107,7 @@ class BBoxDecoder(DatagramProtocol):
                         transaction['port']
                     )
                 )
+                f.flush()
 
     def url_data_received(self, result, transaction):
         transaction['mule_response'] = result
@@ -131,10 +132,10 @@ class BBoxDecoder(DatagramProtocol):
         try:
             self.ctrl_unit.decode_binary(data)
         except ValueError as e:
-            transaction['error'] = "Errore di conversione ({})".format(e.message)
+            transaction['error'] = "Errore di conversione binary({})".format(e.message)
             self.log_data(transaction)
         except TypeError as e:
-            transaction['error'] = "Errore di conversione ({})".format(e.message)
+            transaction['error'] = "Errore di conversione binary({})".format(e.message)
             self.log_data(transaction)
 
         # Se i dati sono validi
@@ -149,7 +150,10 @@ class BBoxDecoder(DatagramProtocol):
             # Li codifico in ASCII
             try:
                 self.ctrl_unit.encode_ascii()
-            except (ValueError, TypeError):
+            except ValueError as e:
+                transaction['error'] = "Errore di conversione in ascii ({})".format(e.message)
+                self.log_data(transaction)
+            except TypeError as e:
                 transaction['error'] = "Errore di conversione in ascii ({})".format(e.message)
                 self.log_data(transaction)
 
