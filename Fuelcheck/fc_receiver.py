@@ -63,9 +63,9 @@ class BBoxDecoder(DatagramProtocol):
         if 'event' not in transaction:
             transaction['event'] = 0x99
         if 'mule_response' not in transaction:
-            transaction['mule_response'] = "A5????"
+            transaction['mule_response'] = "5A????"
         if 'output_ascii_datagram' not in transaction:
-            transaction['output_ascii_datagram'] = "5A????"
+            transaction['output_ascii_datagram'] = "A5????"
         if 'input_binary_datagram' not in transaction:
             transaction['input_binary_datagram'] = ""
         if 'host' not in transaction:
@@ -132,11 +132,19 @@ class BBoxDecoder(DatagramProtocol):
         try:
             self.ctrl_unit.decode_binary(data)
         except ValueError as e:
-            transaction['error'] = "Errore di conversione binary({})".format(e.message)
+            transaction['error'] = "Errore di conversione binary ({}, {})".format(
+                e.message,
+                transaction['input_binary_datagram']
+            )
             self.log_data(transaction)
+            return
         except TypeError as e:
-            transaction['error'] = "Errore di conversione binary({})".format(e.message)
+            transaction['error'] = "Errore di conversione binary ({}, {})".format(
+                e.message,
+                transaction['input_binary_datagram']
+            )
             self.log_data(transaction)
+            return
 
         # Se i dati sono validi
         if self.ctrl_unit.check_values():
@@ -151,11 +159,19 @@ class BBoxDecoder(DatagramProtocol):
             try:
                 self.ctrl_unit.encode_ascii()
             except ValueError as e:
-                transaction['error'] = "Errore di conversione in ascii ({})".format(e.message)
+                transaction['error'] = "Errore di conversione in ascii ({}, {})".format(
+                    e.message,
+                    transaction['input_binary_datagram']
+                )
                 self.log_data(transaction)
+                return
             except TypeError as e:
-                transaction['error'] = "Errore di conversione in ascii ({})".format(e.message)
+                transaction['error'] = "Errore di conversione in ascii ({}, {})".format(
+                    e.message,
+                    transaction['input_binary_datagram']
+                )
                 self.log_data(transaction)
+                return
 
             transaction['output_ascii_datagram'] = self.ctrl_unit.output_packet
 
