@@ -42,6 +42,7 @@ from twisted.internet import reactor
 from optparse import OptionParser
 from ControlUnit import ControlUnit
 import sys
+import binascii
 
 
 class CtrlUnitDatagramProtocol(DatagramProtocol):
@@ -59,20 +60,29 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
     def __init__(self, parameters):
 
         ctrl_unit = ControlUnit()
+        print "0. Decoding '{0}'".format(parameters.message)
 
         try:
-            ctrl_unit.decode_ascii(options.message)
+            ctrl_unit.decode_ascii(parameters.message)
+            print "  Decoded"
         except (ValueError, TypeError):
+            print "  Error decoding"
             self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_DEC_ASCII)
+            raise
 
         try:
             ctrl_unit.encode_binary()
+            print "  Encoding"
         except (ValueError, TypeError):
+            print "  Error encoding"
             self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_ENC_BINARY)
+            raise
 
         # Prendo i parametri
         self.packet = ctrl_unit.output_packet
         self.server_address = parameters.server
+        print "  Encoded form '{0}'".format(binascii.hexlify(self.packet))
+        print "  Server {0}:9123".format(parameters.server)
 
         if parameters.outfile:
             self.output_enabled = True
@@ -98,6 +108,7 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
                 self.timeout_id.cancel()
         except Exception, e:
             print("Error in clear_tout(): {0}".format(e.message))
+            raise
 
     def got_ip(self, ip):
 
@@ -113,31 +124,35 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
 
         try:
             self.transport.connect(ip, 9123)
+            print "  Connect to IP {0}".format(ip)
         except Exception, e:
-            print("Got {0} in got_ip()".format(e.message))
+            print("  Error, got {0} in got_ip()".format(e.message))
             self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_CONN)
+            raise
 
         try:
             self.transport.write(self.packet)
+            print "  Send '{0}'".format(binascii.hexlify(self.packet))
         except Exception, e:
-            print("Got {0} in got_ip()".format(e.message))
+            print("  Error, got {0} in got_ip()".format(e.message))
             self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_SEND)
+            raise
 
         self.start_tout(CtrlUnitDatagramProtocol.ERR_NO_SERVER_FOUND, "Connection and datagram send")
 
     def no_ip(self, failure):
 
-        print "Unable to resolve server {0}".format(failure)
+        print "2. Unable to resolve server {0}".format(failure)
         self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_RESOLVE)
 
     def connectionRefused(self):
 
-        print "Unable to connect"
+        print "3. Unable to connect"
         self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_CONNECT)
 
     def connectionLost(self):
 
-        print "Connection lost"
+        print "3. Connection lost"
         self.stop_try(CtrlUnitDatagramProtocol.ERR_CONNECTION_LOST)
 
     def startProtocol(self):
@@ -166,7 +181,7 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
         # Per prima cosa elimino il timeout se presente
         self.clear_tout()
 
-        print '3. Datagram received: ', repr(datagram)
+        print '5. Datagram received: ', repr(datagram)
 
         # Risposta ricevuta dal server
         if self.output_enabled:
