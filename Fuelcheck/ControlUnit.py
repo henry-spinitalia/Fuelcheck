@@ -494,7 +494,7 @@ class ControlUnit():
             )
 
         # Controllo Quadro
-        if not input_message[103] in ('1', '0'):
+        if not input_message[103] in ('1', '0', 'F'):
             raise ValueError(
                 "Formato Quadro non corretto presenza di caratteri non validi: ({0:s})".format(input_message[103])
             )

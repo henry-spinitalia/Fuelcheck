@@ -964,5 +964,14 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit.decode_ascii(input_mex)
 
+    def test_wrong_packets(self):
+
+        ctrl_unit = ControlUnit()
+
+        input_mex = "A57901351535057249088000050201512160653500000000000N000000000E0000605647080419055409" \
+                    "0000000000000000FFFF1UUU00UUUUUU00000"
+
+        ctrl_unit.decode_ascii(input_mex)
+
 if __name__ == '__main__':
     unittest.main()
