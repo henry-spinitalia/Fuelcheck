@@ -693,7 +693,7 @@ class ControlUnit():
 
         if self.cup_lock == ControlUnit.CAPS_LOCKED:
             bitfield_output |= ControlUnit.BIT_CUP_LOCK
-        if self.cup_lock == ControlUnit.CAPS_UNLOCKED:
+        elif self.cup_lock == ControlUnit.CAPS_UNLOCKED:
             bitfield_output &= ~ControlUnit.BIT_CUP_LOCK
         else:
             raise ValueError("cup_lock value != CAPS_LOCKED/CAPS_UNLOCKED")

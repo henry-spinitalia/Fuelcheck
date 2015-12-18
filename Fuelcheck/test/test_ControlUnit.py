@@ -977,5 +977,12 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit.decode_binary(binascii.unhexlify(input_mex))
 
+        # !linea 696 elif self.cup_lock == ControlUnit.CAPS_UNLOCKED: senza el!!!!
+        # input_mex = "A57901351535057248759000016201005082359590000000000N000000000E00000042003200322423170000000000000000FFF1FUUU11UUUUUU00000"
+        ctrl_unit.decode_ascii(input_mex)
+        ctrl_unit.encode_binary()
+
+
+
 if __name__ == '__main__':
     unittest.main()

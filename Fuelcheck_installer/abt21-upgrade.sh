@@ -256,9 +256,23 @@ gprs_update_clock()
     # con '| cut -d' ' -f1,2,3,10' -> 15 Dec 11:53:48 0.053986
     chroot /mnt2 /usr/bin/ntpdate it.pool.ntp.org | cut -d' ' -f1,2,3,10 > /tmp/ntp_out
     if [ "$?" = "0" ]; then
-        utl_log_data "gprs_connect" " Clock aggiornato ($(cat /mnt2/tmp/ntp_out))"
+        utl_log_data "gprs_update_clock" " Clock aggiornato ($(cat /mnt2/tmp/ntp_out))"
     else
-        utl_log_error "gprs_connect" " Impossibile aggiornare il clock di sistema"
+        utl_log_error "gprs_update_clock" " Impossibile aggiornare il clock di sistema"
+    fi
+
+    chroot /mnt2 /sbin/hwclock -w /dev/rtc
+    if [ "$?" = "0" ]; then
+        utl_log_data "gprs_update_clock" " /dev/rtc aggiornato $(date))"
+    else
+        utl_log_error "gprs_update_clock" " Impossibile aggiornare /dev/rtc di sistema"
+    fi
+
+    chroot /mnt2 /sbin/hwclock -w /dev/rtc1
+    if [ "$?" = "0" ]; then
+        utl_log_data "gprs_update_clock" " /dev/rtc1 aggiornato $(date))"
+    else
+        utl_log_error "gprs_update_clock" " Impossibile aggiornare /dev/rtc1 di sistema"
     fi
 
 }
