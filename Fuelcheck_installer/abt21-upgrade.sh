@@ -3,6 +3,8 @@
 # 1. Manca GStreamer
 # 2. Fw download
 # 4. Devo disabilitare getty
+# 5. Devo salvare l'RTC dopo l'update
+# 6. Perchè viene trasmesso un evento 16 con data 08/05/2010
 
 # -----------------------------------------------------------------------------------------------------------
 # /mnt  -> Posizione della pennetta USB

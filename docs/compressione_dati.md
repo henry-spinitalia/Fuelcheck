@@ -1,4 +1,4 @@
-# Introduzione alle definizioni di una struct
+# Definizione di una struct
 
 ![My personal test](http://g.gravizo.com/g?
     digraph G {

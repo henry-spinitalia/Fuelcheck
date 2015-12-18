@@ -101,119 +101,62 @@ Eg. 4533.35 is 45 degrees and 33.35 minutes. ".35" of a minute is exactly 21 sec
 
 Eg. 16708.033 is 167 degrees and 8.033 minutes. ".033" of a minute is about 2 seconds.
 
-In NMEA 4.00 (and possibly some earlier versions), the character "^" is reserved as an introducer for two-character hex escapes using 0-9
-and A-F, expressing an ISO 8859-1 (Latin-1) character <<ANON>>.
+In NMEA 4.00 (and possibly some earlier versions), the character "^" is reserved as an introducer for two-character hex escapes using 0-9 and A-F, expressing an ISO 8859-1 (Latin-1) character <<ANON>>.
 
-According to <<UNMEA>>, the NMEA standard requires that a field (such as
-altitude, latitude, or longitude) must be left empty when the GPS has
-no valid data for it.  However, many receivers violate this.  It's
-common, for example, to see latitude/longitude/altitude figures filled
-with zeros when the GPS has no valid data.
+According to <<UNMEA>>, the NMEA standard requires that a field (such as altitude, latitude, or longitude) must be left empty when the GPS has no valid data for it.  However, many receivers violate this.  It's common, for example, to see latitude/longitude/altitude figures filled with zeros when the GPS has no valid data.
 
-== Dates and times ==
+## Dates and times
 
-NMEA devices report date and time in UTC, aka GMT, aka Zulu time (as
-opposed to local time).  But the way this report is computed results
-in some odd bugs and inaccuracies.
+NMEA devices report date and time in UTC, aka GMT, aka Zulu time (as opposed to local time).  But the way this report is computed results in some odd bugs and inaccuracies.
 
-Date and time in GPS is represented as number of weeks from the start
-of zero second of 6 January 1980, plus number of seconds into the
-week.  GPS time is not leap-second corrected, though satellites also
-broadcast a current leap-second correction which may be updated on
-three-month boundaries according to rotational bulletins issued by the
-International Earth Rotation and Reference Systems Service (IERS).
+Date and time in GPS is represented as number of weeks from the start of zero second of 6 January 1980, plus number of seconds into the week.  GPS time is not leap-second corrected, though satellites also broadcast a current leap-second correction which may be updated on three-month boundaries according to rotational bulletins issued by the International Earth Rotation and Reference Systems Service (IERS).
 
-The leap-second correction is only included in the satellite subframre
-broadcast, roughly once ever 20 minutes.  While the satellites do
-notify GPSes of upcoming leap-seconds, this notification is not
-necessarily processed correctly on consumer-grade devices, and will
-not be available at all when a GPS receiver has just
-cold-booted. Thus, reported UTC time may be slightly inaccurate
-between a cold boot or leap second and the following subframe
-broadcast.
+The leap-second correction is only included in the satellite sub-frame broadcast, roughly once ever 20 minutes.  While the satellites do notify GPSes of upcoming leap-seconds, this notification is not necessarily processed correctly on consumer-grade devices, and will not be available at all when a GPS receiver has just cold-booted. Thus, reported UTC time may be slightly inaccurate between a cold boot or leap second and the following sub-frame broadcast.
 
-GPS date and time are subject to a rollover problem in the 10-bit week
-number counter, which will re-zero every 1024 weeks (roughly every 20
-years). The last rollover (and the first since GPS went live in 1980)
-was in 1999; the next would fall in 2019, but plans are afoot to
-upgrade the satellite counters to 13 bits; this will delay the next
-rollover until 2173.
+GPS date and time are subject to a rollover problem in the 10-bit week number counter, which will re-zero every 1024 weeks (roughly every 20 years). The last rollover (and the first since GPS went live in 1980) was in 1999; the next would fall in 2019, but plans are afoot to upgrade the satellite counters to 13 bits; this will delay the next rollover until 2173.
 
-For accurate time reporting, therefore, a GPS requires a supplemental
-time references sufficient to identify the current rollover period,
-e.g. accurate to within 512 weeks.  Many NMEA GPSes have a wired-in
-assumption about the UTC time of the last rollover and will thus report
-incorrect times outside the rollover period they were designed in.
+For accurate time reporting, therefore, a GPS requires a supplemental time references sufficient to identify the current rollover period, e.g. accurate to within 512 weeks.  Many NMEA GPSes have a wired-in assumption about the UTC time of the last rollover and will thus report incorrect times outside the rollover period they were designed in.
 
-For these reasons, NMEA GPSes should not be considered high-quality
-references for absolute time.  Some do, however, emit pulse-per-second
-RS232 signals which can be used to improve the precision of an
-external clock. See <<PPS>> for discussion.
+For these reasons, NMEA GPSes should not be considered high-quality references for absolute time.  Some do, however, emit pulse-per-second RS232 signals which can be used to improve the precision of an external clock. See _**PPS**_ for discussion.
 
-== Error status indications
+## Error status indications
 
-The NMEA sentences in the normal GPS inventory return four kinds of
-validity flags: Mode, Status, the Active/Void bit, and in later
-versions the FAA indicator mode.  The FAA mode field is legally
-required and orthogonal to the others. Here's how the first three used
-in various sentences:
+The NMEA sentences in the normal GPS inventory return four kinds of validity flags: Mode, Status, the Active/Void bit, and in later versions the FAA indicator mode.  The FAA mode field is legally required and orthogonal to the others. Here's how the first three used in various sentences:
 
-[frame="topbot",options="header"]
-|========================================================
-|               | GPRMC  |   GPGLL  |   GPGGA  |   GPGSA
-|Returns A/V    |  Yes   |    Yes   |    No    |     No
-|Returns mode   |  No    |    No    |    No    |     Yes
-|Returns status |  No    |    Yes   |    Yes   |     No
-|========================================================
+                  | GPRMC  |   GPGLL  |   GPGGA  |   GPGSA
+  --------------- | ------ | -------- | -------- | ---------
+  Returns A/V    |  Yes   |    Yes   |    No    |     No
+  Returns mode   |  No    |    No    |    No    |     Yes
+  Returns status |  No    |    Yes   |    Yes   |     No
 
-The "Navigation receiver warning" is 'A' for Active and 'V' for Void.
-(or warning).  You will see it when either there is no satellite lock,
-or to indicate a valid fix that has a DOP too high, or which fails an
-elevation test. In the latter case the visible sats are below some
-fixed elevation of the horizon (usually 15%, but some GPSes make this
-adjustable) making position unreliable due to poor geometry and more
-variable signal lag induced by lengthened atmosphere transit.
+The "Navigation receiver warning" is 'A' for Active and 'V' for Void. (or warning).  You will see it when either there is no satellite lock, or to indicate a valid fix that has a DOP too high, or which fails an elevation test. In the latter case the visible sats are below some fixed elevation of the horizon (usually 15%, but some GPSes make this adjustable) making position unreliable due to poor geometry and more variable signal lag induced by lengthened atmosphere transit.
 
-Mode is associated with the GSA sentence associated with the last fix.
-It reports whether the fix was no good, sufficirnt for 2D, or
-sufficient for 3D (values 1, 2, and 3).
+Mode is associated with the GSA sentence associated with the last fix. It reports whether the fix was no good, sufficirnt for 2D, or sufficient for 3D (values 1, 2, and 3).
 
-Status will be 0 ehen the sample from from which the reporting
-sentence was generated does not have a valid fix, 1 when it has
-a valid (normal-precision) fix, and 2 when the fig is DGPS corrected
-(reducing the base error).
+Status will be 0 ehen the sample from from which the reporting sentence was generated does not have a valid fix, 1 when it has a valid (normal-precision) fix, and 2 when the fig is DGPS corrected (reducing the base error).
 
-In addition, some sentences may use empty fields to signify invalid
-data. It is not clear whether NMEA 0183 allows this, but real-world
-software must cope.
+In addition, some sentences may use empty fields to signify invalid data. It is not clear whether NMEA 0183 allows this, but real-world software must cope.
 
-== Talker IDs ==
+## Talker IDs
 
-NMEA sentences do not identify the individual device that issued
-them; the format was originally designed for shipboard multidrop
-networks on which it's possible only to broadcast to all devices,. not
-address a specific one.
+NMEA sentences do not identify the individual device that issued them; the format was originally designed for shipboard multidrop networks on which it's possible only to broadcast to all devices,. not address a specific one.
 
-NMEA sentences do, however, include a "talker ID" a two-character
-prefix that identifies the type of the transmitting unit.  By far the
-most common talker ID is "GP", identifying a generic GPS, but all of
-the following are well known:
+NMEA sentences do, however, include a "talker ID" a two-character prefix that identifies the type of the transmitting unit.  By far the most common talker ID is "GP", identifying a generic GPS, but all of the following are well known:
 
-.Common talker IDs
-|================================================================
-|GP    |  Global Positioning System receiver
-|LC    |  Loran-C receiver
-|II    |  Integrated Instrumentation
-|IN    |  Integrated Navigation
-|EC    |  Electronic Chart Display & Information System (ECDIS)
-|CD    |  Digital Selective Calling (DSC)
-|GA    |  Galileo Positioning System
-|GL    |  GLONASS, according to IEIC 61162-1
-|GN    |  Mixed GPS and GLONASS data, according to IEIC 61162-1
-|GB    |  BeiDou (China)
-|BD    |  BeiDou (China)
-|QZ    |  QZSS regional GPS augmentation system (Japan)
-|================================================================
+ | Common talker IDs
+ ------ | ---------------------------------------------------
+  GP    |  Global Positioning System receiver
+  LC    |  Loran-C receiver
+  II    |  Integrated Instrumentation
+  IN    |  Integrated Navigation
+  EC    |  Electronic Chart Display & Information System (ECDIS)
+  CD    |  Digital Selective Calling (DSC)
+  GA    |  Galileo Positioning System
+  GL    |  GLONASS, according to IEIC 61162-1
+  GN    |  Mixed GPS and GLONASS data, according to IEIC 61162-1
+  GB    |  BeiDou (China)
+  BD    |  BeiDou (China)
+  QZ    |  QZSS regional GPS augmentation system (Japan)
 
 LC - Loran-C is a marine navigation system run by the U.S. government,
 which is planning to shut it down in favor of GPS.  Some non-Loran

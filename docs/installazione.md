@@ -1,5 +1,7 @@
 # 1. Descrizione generale
 
+Per l'installazione del firmware all'interno delle unità di controllo remoto occorre utilizzare un apposito dispositivo di archiviazione USB, che si occupa di aggiornare la BSP ed installare tutti i programmi accessori richiesti.
+
 # 1.1 Dispositivi supportati
 
 Alcuni dispositivi di archiviazione USB, nonostante funzionino perfettamente, non vengono rilevati correttamente all'avvio e quindi non possono essere utilizzati per la prima installazione dei dispositivi:
