@@ -1,6 +1,8 @@
 # Descrizione 
 
-Dal momento che ci si connette ad un server remoto con ssh, e viene creata una console virtuale che scompare non appena la connessione termina, bisogna eseguire il server all'interno di _**screen**_. In questo modo sarà possibile scollegarsi lasciando il programma in esecuzione per poi riconnettersi in seguito.
+Dal momento che ci si connette ad un server remoto con ssh, e viene creata una console virtuale che scompare non appena
+la connessione termina, bisogna eseguire il server all'interno di _**screen**_.
+In questo modo sarà possibile scollegarsi lasciando il programma in esecuzione per poi riconnettersi in seguito.
 
 ## Controllare se siamo dentro screen
 
@@ -82,6 +84,19 @@ oppure possiamo identificare il pid e mandargli un SIGKILL senza entrare in scre
   mik@pritijen ~/temp_fuelcheck/Fuelcheck $ kill 30309
 
 ```
+
+## Comandi base di screen
+
+Per poter utilizzare screen, ti basta ricordare che:
+
+  - Se vuoi uscire da screen lasciandolo attivo, devi usare DETACH ( CTRL-a d )
+  - Se vuoi scoprire se stai dentro screen, chiedi info ( CTRL-a i )
+  - Se sei dentro screen e vuoi ucciderlo, usa kill ( CTRL-a k ) o killall ( CTRL-a \ )
+  - Se per caso hai premuto CTRL-s, hai bloccato la shell, per sbloccarla basta CTRL-q
+  - Per avere l'elenco dei processi usa pstree -p
+
+
+
 
 
 
