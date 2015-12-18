@@ -8,7 +8,7 @@
 # touch /usr/lib/python2.6/site-packages/zope/__init__.py
 # ln -s /usr/lib/python2.6/site-packages/zope.interface-3.5.1-py2.6-linux-x86_64.egg/zope/interface/
 #       /usr/lib/python2.6/site-packages/zope/interface
-# rsync -av --progress pritijen:/usr/lib/python2.6/optparse.py /usr/lib/python2.6/
+# rsync -av --progress pritijen.webhop.org:/usr/lib/python2.6/optparse.py /usr/lib/python2.6/
 #
 
 # UDP

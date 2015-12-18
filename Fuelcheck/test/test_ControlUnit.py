@@ -973,5 +973,9 @@ class TestControlUnit(unittest.TestCase):
 
         ctrl_unit.decode_ascii(input_mex)
 
+        input_mex = "32025891f8333b440100000001f3cd7256000000000000000000000010000e001d008100a3010000000000000000ec000000"
+
+        ctrl_unit.decode_binary(binascii.unhexlify(input_mex))
+
 if __name__ == '__main__':
     unittest.main()

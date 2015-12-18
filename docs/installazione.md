@@ -327,176 +327,154 @@ sd 0:0:0:0: [sda] Attached SCSI removable disk
 
 THE SYSTEM UPGRADING WILL START SOON...
 
+usb 2-1: new high speed USB device using fsl-ehci and address 3
+scsi1 : usb-storage 2-1:1.0
+scsi 1:0:0:0: Direct-Access     Kingston DT 101 G2        1.00 PQ: 0 ANSI: 4
+sd 1:0:0:0: [sda] 15131636 512-byte logical blocks: (7.74 GB/7.21 GiB)
+sd 1:0:0:0: [sda] Write Protect is off
+sd 1:0:0:0: [sda] Assuming drive cache: write through
+sd 1:0:0:0: [sda] Assuming drive cache: write through
+ sda: sda1
+sd 1:0:0:0: [sda] Assuming drive cache: write through
+sd 1:0:0:0: [sda] Attached SCSI removable disk
+           main_loop(): Avvio installazione
 Pindog Watchdog Timer, (c) 2008 EVOL Srl, time period: 60 - 180 sec
 pindog pindog.0: watchdog service ready
-           gprs_init(): Apertura della porta
+           gprs_init(): Inizializzo il modem
+           gprs_init():   Apertura della porta
              gprs_on(): Avvio del modem
              gprs_on():  Inizializzazione dei segnali
              gprs_on():  Abilitazione del segnale ON
              gprs_on():  Abilitazione del segnale IGNITION
-   gprs_check_config(): Caricamento dati dal modem
+           gprs_init():   Caricamento dati dal modem
  gprs_catch_response():  STARTED!
  gprs_catch_response():   GPRS IPR = '115200'
- gprs_catch_response():  GPRS RSSI = '14'
+ gprs_catch_response():  GPRS RSSI = '18'
  gprs_catch_response():     SIM ID = '8939883263100041505'
- gprs_catch_response():        DBM = ''
+ gprs_catch_response():        DBM = '-78'
  gprs_catch_response():       IMEI = '351535057285439'
       gprs_check_pin(): Checking PIN
       gprs_check_pin():  Pin 1554 OK
-install_fuelcheck_fw(): Avvio installazione
+ gprs_catch_response():       IMSI = '222887635303152'
        install_bsp01(): Installazione BSP 01
           mount_root(): Monto la root partition
-UBI: attaching mtd3 to ubi0
-UBI: physical eraseblock size:   131072 bytes (128 KiB)
-UBI: logical eraseblock size:    126976 bytes
-UBI: smallest flash I/O unit:    2048
-UBI: VID header offset:          2048 (aligned 2048)
-UBI: data offset:                4096
-UBI: attached mtd3 to ubi0
-UBI: MTD device name:            "rootfs"
-UBI: MTD device size:            122 MiB
-UBI: number of good PEBs:        983
-UBI: number of bad PEBs:         0
-UBI: max. allowed volumes:       128
-UBI: wear-leveling threshold:    4096
-UBI: number of internal volumes: 1
-UBI: number of user volumes:     1
-UBI: available PEBs:             0
-UBI: total number of reserved PEBs: 983
-UBI: number of PEBs reserved for bad PEB handling: 9
-UBI: max/mean erase counter: 1/0
-UBI: image sequence number: 1778981308
-UBI: background thread "ubi_bgt0d" started, PID 1245
- ubiblka: unknown partition table
           mount_root():  ubiattach ok
-UBIFS: mounted UBI device 0, volume 0, name "rootfs"
-UBIFS: file system size:   121769984 bytes (118916 KiB, 116 MiB, 959 LEBs)
-UBIFS: journal size:       9023488 bytes (8812 KiB, 8 MiB, 72 LEBs)
-UBIFS: media format:       w4/r0 (latest is w4/r0)
-UBIFS: default compressor: zlib
-UBIFS: reserved for root:  0 bytes (0 KiB)
           mount_root():  mount ok
          backup_data(): Controllo i files presenti
          backup_data():  PROD: ABT21-B-00-200049***432013***testsw:v1.0.1***testbrd:v1.0
          backup_data():  ERR: no-files
-          mount_root(): Smonto la root partition
-UBIFS: un-mount UBI device 0, volume 0
+         umount_root(): Smonto la root partition
          umount_root():  umount ok
-UBI: mtd3 is detached from ubi0
          umount_root():  ubidetach ok
        install_bsp01():  Installo la root partition mtd3
        install_bsp01():  flash_eraseall ok
        install_bsp01():  ubiformat ok
           mount_root(): Monto la root partition
-UBI: attaching mtd3 to ubi0
-UBI: physical eraseblock size:   131072 bytes (128 KiB)
-UBI: logical eraseblock size:    126976 bytes
-UBI: smallest flash I/O unit:    2048
-UBI: VID header offset:          2048 (aligned 2048)
-UBI: data offset:                4096
-UBI: volume 0 ("rootfs") re-sized from 967 to 970 LEBs
-UBI: attached mtd3 to ubi0
-UBI: MTD device name:            "rootfs"
-UBI: MTD device size:            122 MiB
-UBI: number of good PEBs:        983
-UBI: number of bad PEBs:         0
-UBI: max. allowed volumes:       128
-UBI: wear-leveling threshold:    4096
-UBI: number of internal volumes: 1
-UBI: number of user volumes:     1
-UBI: available PEBs:             0
-UBI: total number of reserved PEBs: 983
-UBI: number of PEBs reserved for bad PEB handling: 9
-UBI: max/mean erase counter: 0/0
-UBI: image sequence number: 1152295975
-UBI: background thread "ubi_bgt0d" started, PID 1281
- ubiblka: unknown partition table
           mount_root():  ubiattach ok
-UBIFS: mounted UBI device 0, volume 0, name "rootfs"
-UBIFS: file system size:   121769984 bytes (118916 KiB, 116 MiB, 959 LEBs)
-UBIFS: journal size:       9023488 bytes (8812 KiB, 8 MiB, 72 LEBs)
-UBIFS: media format:       w4/r0 (latest is w4/r0)
-UBIFS: default compressor: zlib
-UBIFS: reserved for root:  0 bytes (0 KiB)
           mount_root():  mount ok
         restore_data(): Ricopio i files
         restore_data():  PROD: ABT21-B-00-200049***432013***testsw:v1.0.1***testbrd:v1.0
         restore_data():  ERR: no-files
         restore_data():  PIN: 1554;8939883263100041505
         restore_data():  IMEI: 351535057285439
+         umount_root(): Smonto la root partition
+         umount_root():  umount ok
+         umount_root():  ubidetach ok
        install_bsp01():  flash_eraseall_mtd1 ok
        install_bsp01():  flash_eraseall_mtd0 ok
        install_bsp01():  kobs-ng ok
        install_bsp03(): Aggiornamento alla 03
+          mount_root(): Monto la root partition
+          mount_root():  ubiattach ok
+          mount_root():  mount ok
        install_bsp03():  Decomprimo l'aggiornamento ok
        install_bsp03():  flash_eraseall_mtd2 ok
        install_bsp03():  nandwrite_mtd2 ok
        install_bsp03():  flash_eraseall_mtd0 ok
        install_bsp03():  kobs-ng ok
-install_fuelcheck_fw(): Aggiorno il software
-         change_repo(): Cambio base
-         change_repo():  Base repo changed
-         change_repo():  Locale repo changed
-         change_repo():  Noarch repo changed
-         change_repo():  Perl repo changed
-         change_repo():  Python repo changed
+         umount_root(): Smonto la root partition
+         umount_root():  umount ok
+         umount_root():  ubidetach ok
+          mount_root(): Monto la root partition
+          mount_root():  ubiattach ok
+          mount_root():  mount ok
+     gprs_init_files(): Initialize gprs files
+    environment_init():  ssh_config writing
+    environment_init():  id_rsa writing
+    environment_init():  key_pub writing
+    environment_init():  rotatelog writing
+    environment_init():  dns backup
+    environment_init():  dns writing
+    environment_init():  gprs backup
+    environment_init():  gprs writing
+    environment_init():  mgprs backup
+    environment_init():  mgprs writing
+    environment_init():  resolv.conf hard link
+    environment_init():  known_hosts hard link
+    opkg_change_repo(): Cambio base
+    opkg_change_repo():  Base repo changed
+    opkg_change_repo():  Locale repo changed
+    opkg_change_repo():  Noarch repo changed
+    opkg_change_repo():  Perl repo changed
+    opkg_change_repo():  Python repo changed
          opkg_update(): Aggiorno l'elenco dei programmi
 wget: cannot connect to remote host (10.0.0.2): Network is unreachable
-         change_repo():  Updating fail probably due GStreamer...
+         opkg_update():  Updating fail probably due GStreamer...
         opkg_install(): Installo dei programmi (ncurses-terminfo-base libtinfo5 libncurses5)
-         change_repo():  Installing joe_prereq ok
+        opkg_install():  Installing joe_prereq ok
               prereq(): Installing joe ok
-        opkg_install(): Installo dei programmi (curl git less mysql5-client ncurses ncurses-terminfo ntpdate procps pstree rsync screen)
-         change_repo():  Installing 1.13_prereq ok
-        opkg_install(): Installo dei programmi (bash bc ca-certificates diffutils inotify-tools ldd nmap openssh-keygen postgresql-client ppp-tools sqlite3 usbutils)
-         change_repo():  Installing 1.14_prereq ok
-        opkg_install(): Installo dei programmi (gnupg openssl)
-         change_repo():  Installing 1.15_prereq ok
-        opkg_install(): Installo dei programmi (python python-bzip2 python-codecs python-compile python-compiler python-configobj python-core python-crypt python-curses python-datetime)
-         change_repo():  Installing 1.16_prereq_a ok
-        opkg_install(): Installo dei programmi (python-logging python-math python-mime python-misc python-netclient python-pickle python-distutils python-doctest python-fcntl python-io)
-         change_repo():  Installing 1.16_prereq_b ok
-        opkg_install(): Installo dei programmi (python-lang python-pprint python-pydoc python-pygps python-pyrtc python-pyserial python-re python-readline python-shell python-sqlite3 python-stringold)
-         change_repo():  Installing 1.16_prereq_c ok
-        opkg_install(): Installo dei programmi (python-subprocess python-textutils python-threading python-twisted python-zlib python-twisted-bin python-twisted-conch python-twisted-core)
-         change_repo():  Installing 1.16_prereq_d ok
-        opkg_install(): Installo dei programmi (python-twisted-flow python-twisted-lore python-twisted-protocols python-twisted-runner python-twisted-web python-twisted-words python-unittest)
-         change_repo():  Installing 1.16_prereq_e ok
-        opkg_install(): Installo dei programmi (python-twisted-mail python-twisted-names python-twisted-news python-twisted-pair python-twisted-zsh python-zopeinterface)
-         change_repo():  Installing 1.16_prereq_f ok
-         change_repo(): Cambio base
-         change_repo():  Base repo changed
-         change_repo():  Locale repo changed
-         change_repo():  Noarch repo changed
-         change_repo():  Perl repo changed
-         change_repo():  Python repo changed
-          change_pwd(): Changing pwd
-          change_pwd():  Changing pwd ok
-      Adding init ok():
-cp: cannot stat '/mnt/ignite': No such file or directory
-  Saving ignite fail():
-          mount_root(): Smonto la root partition
-UBIFS: un-mount UBI device 0, volume 0
-         umount_root():  umount ok
-UBI: mtd3 is detached from ubi0
-         umount_root():  ubidetach ok
+        opkg_install(): Installo dei programmi (curl git less mysql5-client ncurses ncurses-terminfo ntpdate procps pstree     rsync screen)
+        opkg_install():  Installing 1.13_prereq ok
+        opkg_install(): Installo dei programmi (bash bc ca-certificates diffutils inotify-tools ldd nmap openssh-keygen     postgresql-client ppp-tools sqlite3 usbutils)
+        opkg_install():  Installing 1.14_prereq ok
+        opkg_install(): Installo dei programmi (gnupg openssl htop)
+        opkg_install():  Installing 1.15_prereq ok
+        opkg_install(): Installo dei programmi (python python-bzip2 python-codecs python-compile python-compiler python-configobj     python-core python-crypt python-curses python-datetime)
+        opkg_install():  Installing 1.16_prereq_a ok
+        opkg_install(): Installo dei programmi (python-logging python-math python-mime python-misc python-netclient python-pickle     python-distutils python-doctest python-fcntl python-io)
+        opkg_install():  Installing 1.16_prereq_b ok
+        opkg_install(): Installo dei programmi (python-lang python-pprint python-pydoc python-pygps python-pyrtc python-pyserial     python-re python-readline python-shell python-sqlite3 python-stringold)
+        opkg_install():  Installing 1.16_prereq_c ok
+        opkg_install(): Installo dei programmi (python-subprocess python-textutils python-threading python-twisted python-zlib     python-twisted-bin python-twisted-conch python-twisted-core)
+        opkg_install():  Installing 1.16_prereq_d ok
+        opkg_install(): Installo dei programmi (python-twisted-flow python-twisted-lore python-twisted-protocols     python-twisted-runner python-twisted-web python-twisted-words python-unittest)
+        opkg_install():  Installing 1.16_prereq_e ok
+        opkg_install(): Installo dei programmi (python-twisted-mail python-twisted-names python-twisted-news     python-twisted-pair python-twisted-zsh python-zopeinterface)
+        opkg_install():  Installing 1.16_prereq_f ok
+    opkg_change_repo(): Cambio base
+    opkg_change_repo():  Base repo changed
+    opkg_change_repo():  Locale repo changed
+    opkg_change_repo():  Noarch repo changed
+    opkg_change_repo():  Perl repo changed
+    opkg_change_repo():  Python repo changed
+        gprs_connect(): Avvia la connessione
+        gprs_connect():  Connesso
+   gprs_update_clock(): Aggiorna il clock di sistema
+Error resolving it.pool.ntp.org: Name or service not known (-2)
+ 7 Mar 11:22:43 ntpdate[3718]: Can't find host it.pool.ntp.org: Name or service not known (-2)
+ 7 Mar 11:22:43 ntpdate[3718]: no servers can be used, exiting
+        gprs_connect():  Clock aggiornato ()
+    environment_init(): Initialize environment
+    environment_init():  inittab backup
+    environment_init():  inittab writing
+    environment_init():  local.sh backup
+    environment_init():  local.sh writing
+    environment_init():  halt backup
+    environment_init():  halt writing
+    environment_init():  profile writing
+    environment_init():  Changing pwd ok
             gprs_off(): Arresto del modem
+            gprs_off():  Disattivazione demone ppp
+            gprs_off():  Demone ppp disconnesso
             gprs_off():  Spegnimento del modem
- gprs_catch_response():  Attendo il termine dello shutdown
- gprs_cathc_response():  Disabilitazione del segnale ON
+ gprs_catch_response(): Numero massimo di tentativi di ricezione dati raggiunto.
          gprs_deinit(): Chiusura della porta
+         umount_root(): Smonto la root partition
+         umount_root():  umount ok
+         umount_root():  ubidetach ok
  utl_wait_and_reboot(): Attendo il disinserimento della pennetta e riavvio
  utl_wait_and_reboot():  Attendo il disinserimento della pennetta
-usb 2-1: USB disconnect, address 2
  utl_wait_and_reboot():  Pennetta disinserita
  utl_wait_and_reboot():  Riavvio
-INIT: Switching to runlevel: 6
-INIT: Sending processes the TERM signal
-Sending all processes the TERM signal...
-ehci_fsl_bus_suspend, Host 1
-Sending all processes the KILL signal...
-Unmounting remote filesystems...
-Deactivating swap...
-Unmounting local filesystems...
-Rebooting... Restarting system.
+
 ```
