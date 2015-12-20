@@ -978,9 +978,15 @@ class TestControlUnit(unittest.TestCase):
         ctrl_unit.decode_binary(binascii.unhexlify(input_mex))
 
         # !linea 696 elif self.cup_lock == ControlUnit.CAPS_UNLOCKED: senza el!!!!
-        # input_mex = "A57901351535057248759000016201005082359590000000000N000000000E00000042003200322423170000000000000000FFF1FUUU11UUUUUU00000"
+        input_mex = "A57901351535057248759000016201005082359590000000000N000000000E00000042003200322423170000000000000000FFF1FUUU11UUUUUU00000"
         ctrl_unit.decode_ascii(input_mex)
         ctrl_unit.encode_binary()
+
+        input_mex = "A57901351535057209884000001201512191300051041426502N012350991E00000001000000001754210000000000000000F0FFFUUU00UUUUUU00000"
+
+        ctrl_unit.decode_ascii(input_mex)
+        ctrl_unit.encode_binary()
+
 
 
 

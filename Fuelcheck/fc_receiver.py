@@ -26,6 +26,7 @@ class BBoxDecoder(DatagramProtocol):
     C_TXS_URL = "http://151.1.80.42/src/api/v1?rawData="
     C_OUT_PATH = "/mnt/nas/temp/Fuelcheck/"
     C_OUT_FILE = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator.log"
+    C_OUT_FILE_OLD = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator_fallbacks.log"
 
     def __init__(self):
 
@@ -66,8 +67,8 @@ class BBoxDecoder(DatagramProtocol):
             transaction['mule_response'] = "5A????"
         if 'output_ascii_datagram' not in transaction:
             transaction['output_ascii_datagram'] = "A5????"
-        if 'input_binary_datagram' not in transaction:
-            transaction['input_binary_datagram'] = ""
+        if 'input_datagram' not in transaction:
+            transaction['input_datagram'] = ""
         if 'host' not in transaction:
             transaction['host'] = ""
         if 'port' not in transaction:
@@ -77,7 +78,7 @@ class BBoxDecoder(DatagramProtocol):
             print "{},{},{},{},{}".format(
                 time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
                 transaction['error'],
-                transaction['input_binary_datagram'],
+                transaction['input_datagram'],
                 transaction['host'],
                 transaction['port']
             )
@@ -105,9 +106,17 @@ class BBoxDecoder(DatagramProtocol):
                         transaction['mule_response'],
                         transaction['output_ascii_datagram'],
                         transaction['error'],
-                        transaction['input_binary_datagram'],
+                        transaction['input_datagram'],
                         transaction['host'],
                         transaction['port']
+                    )
+                )
+                f.flush()
+            with open(self.C_OUT_FILE_OLD, 'a') as f:
+                f.write(
+                    "{};{}\n".format(
+                        time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
+                        transaction['input_datagram']
                     )
                 )
                 f.flush()
@@ -129,64 +138,90 @@ class BBoxDecoder(DatagramProtocol):
         # Lo memorizzo in un dizionario
         transaction = dict()
         transaction['time_of_arrival'] = calendar.timegm(time.gmtime())
-        transaction['input_binary_datagram'] = binascii.hexlify(data).upper()
         transaction['host'] = host
         transaction['port'] = port
 
-        # La decodifico da binario in variabili interne
-        try:
-            self.ctrl_unit.decode_binary(data)
-        except ValueError as e:
-            transaction['error'] = "Errore di conversione binary ({}, {})".format(
-                e.message,
-                transaction['input_binary_datagram']
-            )
-            self.log_data(transaction)
-            return
-        except TypeError as e:
-            transaction['error'] = "Errore di conversione binary ({}, {})".format(
-                e.message,
-                transaction['input_binary_datagram']
-            )
-            self.log_data(transaction)
-            return
+        # Se inizia per A5 è un fallback
+        if (data[0:2] == "A5") and (data[2:4] == "{:02X}".format(len(data))):
 
-        # Se i dati sono validi
-        if self.ctrl_unit.check_values():
+            transaction['input_datagram'] = data
+            transaction['fallback'] = True
 
-            transaction['imei'] = self.ctrl_unit.imei
-            transaction['event'] = self.ctrl_unit.event
-            transaction['event_date'] = calendar.timegm(time.gmtime(self.ctrl_unit.unixtime))
-
-            # Li codifico in ASCII
             try:
-                self.ctrl_unit.encode_ascii()
+                self.ctrl_unit.decode_binary(data)
             except ValueError as e:
-                transaction['error'] = "Errore di conversione in ascii ({}, {})".format(
+                transaction['error'] = "Errore di valore in convert_binary ({}, {})".format(
                     e.message,
-                    transaction['input_binary_datagram']
+                    transaction['input_datagram']
                 )
-                self.log_data(transaction)
-                return
             except TypeError as e:
-                transaction['error'] = "Errore di conversione in ascii ({}, {})".format(
+                transaction['error'] = "Errore di tipo in convert_binary ({}, {})".format(
                     e.message,
-                    transaction['input_binary_datagram']
+                    transaction['input_datagram']
                 )
-                self.log_data(transaction)
-                return
 
-            transaction['output_ascii_datagram'] = self.ctrl_unit.output_packet
-
-            # Li invio al server MULE, e quando sarà pronta la risposta faccio chiamare printPage o printError
-            d = getPage(self.C_TXS_URL + self.ctrl_unit.output_packet)
-            d.addCallback(self.url_data_received, transaction)
-            d.addErrback(self.url_error, transaction)
+            transaction['output_ascii_datagram'] = data
 
         else:
-            transaction['error'] = "Valori errati dopo l'estrazione ({})".format(e.message)
-            self.log_data(transaction)
 
+            transaction['input_datagram'] = binascii.hexlify(data).upper()
+            transaction['fallback'] = False
+
+            # La decodifico da binario in variabili interne
+            try:
+                self.ctrl_unit.decode_binary(data)
+            except ValueError as e:
+                transaction['error'] = "Errore di conversione binary ({}, {})".format(
+                    e.message,
+                    transaction['input_datagram']
+                )
+                transaction['input_datagram'] = data
+                transaction['fallback'] = True
+            except TypeError as e:
+                transaction['error'] = "Errore di conversione binary ({}, {})".format(
+                    e.message,
+                    transaction['input_datagram']
+                )
+                transaction['input_datagram'] = data
+                transaction['fallback'] = True
+
+            # Se i dati sono validi
+            if self.ctrl_unit.check_values():
+
+                transaction['imei'] = self.ctrl_unit.imei
+                transaction['event'] = self.ctrl_unit.event
+                transaction['event_date'] = calendar.timegm(time.gmtime(self.ctrl_unit.unixtime))
+
+                # Li codifico in ASCII
+                try:
+                    self.ctrl_unit.encode_ascii()
+                except ValueError as e:
+                    transaction['error'] = "Errore di conversione in ascii ({}, {})".format(
+                        e.message,
+                        transaction['input_datagram']
+                    )
+                    transaction['input_datagram'] = data
+                    transaction['fallback'] = True
+                except TypeError as e:
+                    transaction['error'] = "Errore di conversione in ascii ({}, {})".format(
+                        e.message,
+                        transaction['input_datagram']
+                    )
+                    transaction['input_datagram'] = data
+                    transaction['fallback'] = True
+
+                transaction['output_ascii_datagram'] = self.ctrl_unit.output_packet
+
+            else:
+
+                transaction['error'] = "Valori errati dopo l'estrazione ({})".format(e.message)
+                self.log_data(transaction)
+                return
+
+        # Li invio al server MULE, e quando sarà pronta la risposta faccio chiamare printPage o printError
+        d = getPage(self.C_TXS_URL + transaction['output_ascii_datagram'])
+        d.addCallback(self.url_data_received, transaction)
+        d.addErrback(self.url_error, transaction)
 
 if __name__ == '__main__':
 

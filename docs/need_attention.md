@@ -21,3 +21,8 @@ Finish simple test...
 PowerPrep start initialize power...
 ```
 
+# Non c'e' sincronizzazione dell'HW clock????
+
+Sembra che il comando hwclock -w su rtc ed rtc1 non venga mai dato.
+
+Questo produce strani fenomeni come l'invio di eventi 16 del 2010

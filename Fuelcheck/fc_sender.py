@@ -60,6 +60,8 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
     def __init__(self, parameters):
 
         ctrl_unit = ControlUnit()
+        self.fallback = False
+
         print "0. Decoding '{0}'".format(parameters.message)
 
         try:
@@ -67,21 +69,21 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
             print "  Decoded"
         except (ValueError, TypeError):
             print "  Error decoding"
-            self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_DEC_ASCII)
-            raise
+            self.fallback = True
 
         try:
             ctrl_unit.encode_binary()
             print "  Encoding"
         except (ValueError, TypeError):
             print "  Error encoding"
-            self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_ENC_BINARY)
-            raise
+            self.fallback = True
 
         # Prendo i parametri
         self.packet = ctrl_unit.output_packet
+        self.input_data = parameters.message
         self.server_address = parameters.server
-        print "  Encoded form '{0}'".format(binascii.hexlify(self.packet))
+
+        print "  Encoded form '{0}'".format(binascii.hexlify(self.packet).upper())
         print "  Server {0}:9123".format(parameters.server)
 
         if parameters.outfile:
@@ -131,8 +133,12 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
             raise
 
         try:
-            self.transport.write(self.packet)
-            print "  Send '{0}'".format(binascii.hexlify(self.packet))
+            if self.fallback:
+                self.transport.write(self.input_data)
+                print "  Send ascii '{0}'".format(binascii.hexlify(self.input_data).upper())
+            else:
+                self.transport.write(self.packet)
+                print "  Send binary '{0}'".format(binascii.hexlify(self.packet).upper())
         except Exception, e:
             print("  Error, got {0} in got_ip()".format(e.message))
             self.stop_try(CtrlUnitDatagramProtocol.ERR_UNABLE_TO_SEND)

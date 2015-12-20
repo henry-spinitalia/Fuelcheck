@@ -5,6 +5,7 @@
 # 4. Devo disabilitare getty
 # 5. Devo salvare l'RTC dopo l'update
 # 6. Perchè viene trasmesso un evento 16 con data 08/05/2010
+# 7. Dare nomi decenti ai mount
 
 # -----------------------------------------------------------------------------------------------------------
 # /mnt  -> Posizione della pennetta USB
@@ -16,6 +17,7 @@
 C_DEBUG=1
 C_CHANGEPW=1
 C_KEY=DKLVXANOWPBEQRMSTUCYZFGHIJ
+C_FW_HOST=14d48b0c29.at-band-camp.net
 
 C_GPRS_DEBUG=0
 C_GPRS_MAX_RETRY=10
@@ -179,8 +181,8 @@ opkg_install_all()
     opkg_install "curl git less mysql5-client ncurses ncurses-terminfo ntpdate procps pstree rsync screen" "1.13_prereq"
 
     # 1.14
-    opkg_install "bash bc ca-certificates diffutils inotify-tools ldd nmap openssh-keygen" "1.14_prereq"
-    opkg_install "postgresql-client ppp-tools sqlite3 usbutils" "1.14_prereq"
+    opkg_install "bash bc ca-certificates diffutils inotify-tools ldd nmap openssh-keygen" "1.14_prereq_a"
+    opkg_install "postgresql-client ppp-tools sqlite3 usbutils openssh-scp" "1.14_prereq_b"
 
     # 1.15
     opkg_install "gnupg openssl htop" "1.15_prereq"
@@ -197,6 +199,7 @@ opkg_install_all()
     opkg_install "python-twisted-protocols python-twisted-runner python-twisted-web" "1.16_prereq_i"
     opkg_install "python-twisted-words python-unittest python-twisted-mail python-twisted-names" "1.16_prereq_j"
     opkg_install "python-twisted-news python-twisted-pair python-twisted-zsh python-zopeinterface" "1.16_prereq_k"
+    # Ho rimosso packagekit-python e python-dev
 
     # Configurazione di opkg in remoto
     opkg_change_repo "http://feeds.angstrom-distribution.org/feeds/2011.03/ipk/glibc"
@@ -252,9 +255,14 @@ gprs_update_clock()
 
     utl_log_data "gprs_update_clock" "Aggiorna il clock di sistema"
 
+    # Prima li leggo
+    utl_log_data "gprs_update_clock" " rtc    => '$(hwclock -r /dev/rtc)'"
+    utl_log_data "gprs_update_clock" " rtc1   => '$(hwclock -r /dev/rtc1)'"
+    utl_log_data "gprs_update_clock" " kernel => '$(date)'"
+
     # 15 Dec 11:52:35 ntpdate[1769]: step time server 212.45.144.3 offset 306773.413297 sec
     # con '| cut -d' ' -f1,2,3,10' -> 15 Dec 11:53:48 0.053986
-    chroot /mnt2 /usr/bin/ntpdate it.pool.ntp.org | cut -d' ' -f1,2,3,10 > /tmp/ntp_out
+    chroot /mnt2 /usr/bin/ntpdate it.pool.ntp.org | chroot /mnt2 cut -d' ' -f1,2,3,10 > /tmp/ntp_out
     if [ "$?" = "0" ]; then
         utl_log_data "gprs_update_clock" " Clock aggiornato ($(cat /mnt2/tmp/ntp_out))"
     else
@@ -1716,6 +1724,72 @@ EOF
 
     fi
 
+    # Aggiungo l'elenco dei tablets
+
+
+    # Controllo la presenza del workaround per i rimorchi a 12V
+    V_MD5="31431c2138e403db63a3c046e8006797"
+    V_FILE="/mnt2/etc/fuelcheck/tablets"
+    if [ "$(md5sum "$V_FILE" 2>/dev/null | awk '{print $1}')" != "$V_MD5" ]; then
+
+        if [ -e "$V_FILE" ] && [ ! -e "$V_FILE.old" ]; then
+
+            cp "$V_FILE" "$V_FILE.old"
+
+            utl_log_data "environment_init" " tablets backup"
+
+        fi
+
+        cat <<- 'EOF' > "$V_FILE"
+# Version v1.1.14-87-g49bc6a8
+0B05:551F # Asus Fonepad HD MTP & ADB
+0B05:550F # Asus Fonepad HD MTP
+0B05:555F # Asus Fonepad HD PTP & ADB
+0B05:554F # Asus Fonepad HD PTP
+0B05:553F # Asus Fonepad HD Tethering & ADB
+0B05:552F # Asus Fonepad HD Tethering
+0B05:517F # Asus Fonepad PTP & ADB
+0B05:516F # Asus Fonepad PTP
+0B05:515F # Asus Fonepad MTP & ADB
+0B05:514F # Asus Fonepad MTP
+0B05:512F # Asus Fonepad Thetering
+0B05:513F # Asus Fonepad Thetering & ADB
+0B05:5F02 # Asus Fonepad K00E (ME372CG) MTP
+0B05:5F03 # Asus Fonepad K00E (ME372CG) MTP & ADB
+0B05:5F06 # Asus Fonepad K00E (ME372CG) PTP
+0B05:5F07 # Asus Fonepad K00E (ME372CG) PTP & ADB
+0B05:7772 # Asus Fonepad K012 MTP
+0B05:7773 # Asus Fonepad K012 MTP & ADB
+0B05:7776 # Asus Fonepad K012 PTP
+0B05:7777 # Asus Fonepad K012 PTP & ADB
+18D1:D002 # Nexus 7 ADB
+04E8:6860 # Samsung galaxys GT-I9195
+18D1:4E41 # Nexus 7 MTP
+18D1:4E42 # Nexus 7 MTP/ADB
+18D1:4E43 # Nexus 7 PTP
+18D1:4E44 # Nexus 7 PTP/ADB
+18D1:4EE1 # Nexus 5 MTP
+18D1:4EE2 # Nexus 5 MTP/ADB
+18D1:4EE5 # Nexus 5 PTP
+18D1:4EE6 # Nexus 5 PTP/ADB
+18D1:4EE7 # Nexus 5 ADB
+0BB4:2008 # QDYS Connect 7 Pro MTP
+0BB4:0C02 # QDYS Connect 7 Pro MTP & ADB
+0BB4:200B # QDYS Connect 7 Pro PTP
+0BB4:200C # QDYS Connect 7 Pro PTP & ADB
+0BB4:0001 # QDYS Connect 7 Pro CDROM
+0BB4:0C03 # QDYS Connect 7 Pro CDROM & ADB
+EOF
+
+        utl_log_data "environment_init" " tablets writing"
+
+    else
+
+        utl_log_data "environment_init" " tablets already present"
+
+    fi
+
+
     # Controllo la presenza del workaround per i rimorchi a 12V
     V_MD5="3646da9daa9a2b3669d4d9574f3527e1"
     V_FILE="/mnt2/etc/init.d/halt"
@@ -1876,6 +1950,7 @@ main_loop()
     mount -t tmpfs tmpfs /var
     mkdir /var/tmp
     mkdir /var/lock
+    mkdir /var/run
 
     # Elimino i messaggi di sistema a console
     echo "1" > /proc/sys/kernel/printk
@@ -1893,29 +1968,43 @@ main_loop()
     # Aggiorno tutti i files per le connessioni ssh
     gprs_init_files
 
-    # Ora aggiorno i pacchetti
-    opkg_install_all
-
     # Solo ora c'e' ntpdate...
     gprs_connect
     gprs_update_clock
 
-    # Correggo il python
-    mkdir /mnt2/usr/lib/python2.6/site-packages/zope
-    touch /mnt2/usr/lib/python2.6/site-packages/zope/__init__.py
-    chroot /mnt2 ln -s /usr/lib/python2.6/site-packages/zope.interface-3.5.1-py2.6-linux-x86_64.egg/zope/interface/ /usr/lib/python2.6/site-packages/zope/interface
+    # Mi scarico il firmare (Errore -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no)
+    chroot /mnt2 scp $C_FW_HOST:~/fw/* /tmp/ 2>&1 >/dev/null
+    rm /mnt2/tmp/*.md5
+    if [ "$?" = "0" ]; then
+        utl_log_data "main_loop" " fw download ok"
+    else
+        utl_log_error "main_loop" " fw download fail"
+    fi
 
-    # TODO aggiungerlo
+    # Ora aggiorno i pacchetti
+    opkg_install_all
+
+    # Correggo il python
+    if [ ! -e /mnt2/usr/lib/python2.6/site-packages/zope ]
+    then
+        mkdir /mnt2/usr/lib/python2.6/site-packages/zope
+        touch /mnt2/usr/lib/python2.6/site-packages/zope/__init__.py
+        chroot /mnt2 ln -s /usr/lib/python2.6/site-packages/zope.interface-3.5.1-py2.6-linux-x86_64.egg/zope/interface/ /usr/lib/python2.6/site-packages/zope/interface
+    fi
+
+    # Non serve piu', l'ho trovato in qualche package di python
     #rsync -av --progress pritijen.webhop.org:/usr/lib/python2.6/optparse.py /usr/lib/python2.6/
 
+    # Preparo tutti gli altri files
     environment_init
 
-    # TODO da remoto!
-    mkdir /mnt2/opt/fuelcheck_fw
-    tar xzvf /mnt/fw_v1.1.15-16-g0ecee93.tar.gz -C /mnt2/opt/fuelcheck_fw/
-    mv /mnt2/opt/fuelcheck_fw/VERSION /mnt2/etc/fuelcheck/version
-    mv /mnt2/opt/fuelcheck_fw/etc_fuelcheck_config /mnt2/etc/fuelcheck/config
-    mv /mnt2/opt/fuelcheck_fw/abaa21 /mnt2/usr/bin/
+    # Impianto il firmware
+    chroot /mnt2 tar xzvf /tmp/fc_* -C / 2>&1 >/dev/null
+    if [ "$?" = "0" ]; then
+        utl_log_data "main_loop" " fw unpack ok"
+    else
+        utl_log_error "main_loop" " fw unpack fail"
+    fi
 
     installer_deinit
 
