@@ -3,7 +3,7 @@
 # 1. Manca GStreamer
 # 2. Fw download
 # 4. Devo disabilitare getty
-# 5. Devo salvare l'RTC dopo l'update
+# 5. Devo inserire il nuovo ip in Magellano
 # 6. Perchè viene trasmesso un evento 16 con data 08/05/2010
 # 7. Dare nomi decenti ai mount
 
@@ -299,6 +299,32 @@ gprs_init_files()
     # Controllo la presenza della directory
     mkdir -p /mnt2/home/root/.ssh
     chmod 700 /mnt2/home/root/.ssh
+
+    # Controllo che sia presente .ssh/authorized_keys
+    V_MD5="970a571fc6df1be19a32c9965df0b230"
+    V_FILE="/mnt2/home/root/.ssh/authorized_keys"
+    if [ "$(md5sum "$V_FILE" 2>/dev/null | awk '{print $1}')" != "$V_MD5" ]; then
+
+        if [ -e "$V_FILE" ] && [ ! -e "$V_FILE.old" ]; then
+
+            cp "$V_FILE" "$V_FILE.old"
+
+            utl_log_data "environment_init" " authorized_keys backup made"
+
+        fi
+
+        cat <<- 'EOF' > "$V_FILE"
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkBY4qd//aAtFMxZdbx35M7HEupItXoxj39P1TeBdDZ8DQCGXWzWuPAC/qDwMQyyzf0ep+Sfs89wCW6UkmhyJWx49DgCT4NHRPkPgZ0oBDun8+z8Zq4/VySoKbVsKxuXbjwhftnqJQwFVV/RTw9Z4VVc+2YnyP9tAD91sliqtakfHK4Dw/7pg9HyGkLsKU511C9EZ0Oz5/T4GmTG213W7PyBArgAi+7sDljEnnyqQqAwn/s0S2jGoXu3BhFug6rFvUFzMV5UHe9BX+R1+Nl9HgGFdZFuJNACRVz5xkMEXSIyahUFexmNJW8i0KcCov9oZVSwHmjqzCx++i14qgcP0H root@abt21-henry
+EOF
+
+        utl_log_data "environment_init" " authorized_keys writing"
+
+    else
+
+        utl_log_data "environment_init" " authorized_keys already present"
+
+    fi
+    chmod 600 "$V_FILE"
 
     # Controllo che sia presente .ssh/config
     V_MD5="db2a48ac5c424e8419877defc62bcb82"
@@ -1250,7 +1276,7 @@ utl_log_error()
     fi
 
     # TODO: Se non in debug, salva l'errore sulla pen ed esce
-    printf "%020s(): %s%s" "$1" "$2" > "/mnt/error_$V_GPRS_SCID"
+    printf "%020s(): %s%s" "$1" "$2" > "/mnt/error_$V_GPRS_SCID.txt"
     utl_change_led 1 0
     exit
     utl_wait_and_shutdown
@@ -1968,18 +1994,15 @@ main_loop()
     # Aggiorno tutti i files per le connessioni ssh
     gprs_init_files
 
-    # Solo ora c'e' ntpdate...
-    gprs_connect
-    gprs_update_clock
-
+    # TODO Devo renderlo affidabile
     # Mi scarico il firmare (Errore -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no)
-    chroot /mnt2 scp $C_FW_HOST:~/fw/* /tmp/ 2>&1 >/dev/null
-    rm /mnt2/tmp/*.md5
-    if [ "$?" = "0" ]; then
-        utl_log_data "main_loop" " fw download ok"
-    else
-        utl_log_error "main_loop" " fw download fail"
-    fi
+    #chroot /mnt2 scp $C_FW_HOST:~/fw/* /tmp/ 2>&1 >/dev/null
+    #rm /mnt2/tmp/*.md5
+    #if [ "$?" = "0" ]; then
+    #    utl_log_data "main_loop" " fw download ok"
+    #else
+    #    utl_log_error "main_loop" " fw download fail"
+    #fi
 
     # Ora aggiorno i pacchetti
     opkg_install_all
@@ -1995,11 +2018,16 @@ main_loop()
     # Non serve piu', l'ho trovato in qualche package di python
     #rsync -av --progress pritijen.webhop.org:/usr/lib/python2.6/optparse.py /usr/lib/python2.6/
 
+    # Solo ora c'e' ntpdate...
+    gprs_connect
+    gprs_update_clock
+
     # Preparo tutti gli altri files
     environment_init
 
     # Impianto il firmware
-    chroot /mnt2 tar xzvf /tmp/fc_* -C / 2>&1 >/dev/null
+    tar xzvf /mnt/fc_* -C /mnt2/ 2>&1 >/dev/null
+    #chroot /mnt2 tar xzvf /tmp/fc_* -C / 2>&1 >/dev/null
     if [ "$?" = "0" ]; then
         utl_log_data "main_loop" " fw unpack ok"
     else

@@ -77,7 +77,7 @@ class BBoxDecoder(DatagramProtocol):
         if 'error' in transaction:
             print "{},{},{},{},{}".format(
                 time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
-                transaction['error'],
+                transaction['error'].replace('\n', '<n>').replace('\r', '<r>'),
                 transaction['input_datagram'],
                 transaction['host'],
                 transaction['port']
@@ -106,21 +106,22 @@ class BBoxDecoder(DatagramProtocol):
                         transaction['event'],
                         transaction['mule_response'],
                         transaction['output_ascii_datagram'],
-                        transaction['error'],
+                        transaction['error'].replace('\n', '<n>').replace('\r', '<r>'),
                         transaction['input_datagram'],
                         transaction['host'],
                         transaction['port']
                     )
                 )
                 f.flush()
-            with open(self.C_OUT_FILE_OLD, 'a') as f:
-                f.write(
-                    "{};{}\n".format(
-                        time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
-                        transaction['input_datagram']
+            if transaction['fallback']:
+                with open(self.C_OUT_FILE_OLD, 'a') as f:
+                    f.write(
+                        "{};{}\n".format(
+                            time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
+                            transaction['input_datagram']
+                        )
                     )
-                )
-                f.flush()
+                    f.flush()
 
     def url_data_received(self, result, transaction):
         transaction['mule_response'] = result
