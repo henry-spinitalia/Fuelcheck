@@ -12,6 +12,7 @@
 from twisted.internet.protocol import DatagramProtocol
 from twisted.web.client import getPage
 from twisted.internet import reactor
+from optparse import OptionParser
 import binascii
 import calendar
 import time
@@ -23,23 +24,25 @@ from ControlUnit import ControlUnit
 class BBoxDecoder(DatagramProtocol):
     """Riceve un messaggio compresso dalle centraline e lo spedisce al server"""
 
-    C_TXS_URL = "http://151.1.80.42/src/api/v1?rawData="
-    C_OUT_PATH = "/mnt/nas/temp/Fuelcheck/"
-    C_OUT_FILE = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator.log"
-    C_OUT_FILE_OLD = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator_fallbacks.log"
+    C_TXS_URL = "/src/api/v1?rawData="
+    #C_OUT_PATH = "/mnt/nas/temp/Fuelcheck/"
+    #C_OUT_FILE = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator.log"
+    #C_OUT_FILE_OLD = "/mnt/nas/temp/Fuelcheck/fuelcheck_traslator_fallbacks.log"
 
-    def __init__(self):
+    def __init__(self, parameters):
+
+        # Prendo i parametri
+        self.server_address = parameters.server
 
         # Istanzio il traduttore
         self.ctrl_unit = ControlUnit()
 
         # Controllo se sia il caso di salvare nel log ( non lo faccio se provo il programma in locale )
-        if os.path.isdir(self.C_OUT_PATH):
-            self.can_log = True
-            print("Log path found")
-        else:
-            self.can_log = False
-            print("Log path not found")
+        #if os.path.isdir(self.C_OUT_PATH):
+        #    self.can_log = True
+        #    print("Log path found")
+        #else:
+        self.can_log = False
 
         # Dichiaro tutte le variabili necessarie a mantenere l'elenco delle centraline ed i totali di trasmissione
         self.report = {
@@ -52,7 +55,8 @@ class BBoxDecoder(DatagramProtocol):
             }
         }
 
-        print "Starting ControlUnit binary receiver v0.1a"
+        print "Starting ControlUnit binary receiver v1.12"
+        print "Listening on port 9123"
 
     def log_data(self, transaction):
 
@@ -75,22 +79,21 @@ class BBoxDecoder(DatagramProtocol):
             transaction['port'] = ""
 
         if 'error' in transaction:
-            print "{},{},{},{},{}".format(
-                time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
-                transaction['error'].replace('\n', '<n>').replace('\r', '<r>'),
-                transaction['input_datagram'],
-                transaction['host'],
-                transaction['port']
-            )
+        #   print "{},{},{},{},{}".format(
+        #        time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
+        #        transaction['error'].replace('\n', '<n>').replace('\r', '<r>'),
+        #        transaction['input_datagram'],
+        #        transaction['host'],
+        #        transaction['port']
+        #    )
+            pass
         else:
-            print "{} - {} - {} - {:15d} - {:02X} - {} - {}".format(
+            print "{} - {} - {:15d} - {:02X} - {}".format(
                 time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['time_of_arrival'])),
-                transaction['fallback'],
                 time.strftime("%d %b %H:%M:%S", time.gmtime(transaction['event_date'])),
                 transaction['imei'],
                 transaction['event'],
-                transaction['mule_response'],
-                transaction['output_ascii_datagram']
+                transaction['mule_response']
             )
 
         if 'error' not in transaction:
@@ -188,7 +191,12 @@ class BBoxDecoder(DatagramProtocol):
                 transaction['fallback'] = True
 
         # Se i dati sono validi
-        if self.ctrl_unit.check_values():
+        try:
+            valid_data = self.ctrl_unit.check_values()
+        except TypeError, ValueError:
+            valid_data = false
+
+        if valid_data:
 
             transaction['imei'] = self.ctrl_unit.imei
             transaction['event'] = self.ctrl_unit.event
@@ -221,15 +229,26 @@ class BBoxDecoder(DatagramProtocol):
             return
 
         # Li invio al server MULE, e quando sarà pronta la risposta faccio chiamare printPage o printError
-        d = getPage(self.C_TXS_URL + transaction['output_ascii_datagram'])
+        d = getPage("http://" + self.server_address + self.C_TXS_URL + transaction['output_ascii_datagram'])
         d.addCallback(self.url_data_received, transaction)
         d.addErrback(self.url_error, transaction)
 
 if __name__ == '__main__':
 
+    sys.tracebacklimit=0
+
+    # Inizializzo l'interprete dei parametri in ingresso
+    parser = OptionParser()
+    parser.add_option("-s", "--server", help="Indirizzo del server a cui inviare il messaggio", metavar="ADDR",
+                      action="store", type="string", dest="server")
+    (options, args) = parser.parse_args()
+
+    if options.server is None:
+        parser.error('Indirizzo del server non fornito')
+
     # Impostiamo il reattore in ascolto sulla porta 9123. L'esecuzione si blocca su run(), e l'unico evento possibile
     # sarà la ricezione di un datagramma via UDP da parte del reattore e la chiamata del metodo datagramReceived()
-    reactor.listenUDP(9123, BBoxDecoder())
+    reactor.listenUDP(9123, BBoxDecoder(options))
     reactor.run()
 
     # Restituisco il corretto valore

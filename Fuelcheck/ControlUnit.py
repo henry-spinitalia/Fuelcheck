@@ -88,8 +88,8 @@ class ControlUnit():
 
     def check_values(self):
 
-        if type(self.imei) is not long:
-            raise TypeError("L'attributo imei deve essere un numero")
+        if len(str(self.imei)) != 15 and not str(self.imei).isdigit():
+            raise TypeError("L'attributo imei deve essere un numero di 15 caratteri")
         if len(str(self.imei)) != 15:
             raise ValueError("L'attributo imei deve essere un numero di 15 cifre")
         if type(self.driver) is not int:

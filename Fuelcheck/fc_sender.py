@@ -43,7 +43,7 @@ from optparse import OptionParser
 from ControlUnit import ControlUnit
 import sys
 import binascii
-
+import re
 
 class CtrlUnitDatagramProtocol(DatagramProtocol):
 
@@ -94,7 +94,7 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
             self.output_file = ""
 
         self.exit_code = 0           # Diciamo che va tutto bene
-        self.timeout = 30            # Per qualsiasi operazione c'è un timeout di 20s
+        self.timeout = 120           # Per qualsiasi operazione c'è un timeout di 120s
         self.timeout_id = None       # id del timeout
 
     def start_tout(self, resp, mex):
@@ -106,20 +106,15 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
 
         print "  clear tout"
         try:
-            if self.timeout_id.active():
-                self.timeout_id.cancel()
+            if self.timeout_id:
+                if self.timeout_id.active():
+                    self.timeout_id.cancel()
         except Exception, e:
             print("Error in clear_tout(): {0}".format(e.message))
             raise
 
-    def got_ip(self, ip):
+    def connect_and_send(self, ip):
 
-        # Per prima cosa elimino il timeout se presente
-        self.clear_tout()
-
-        print "2. Got IP"
-
-        print "  IP of '{0}' is {1}".format(self.server_address, ip)
         # All'avvio del protocollo si connette ed invia un datagramma
         # Non è possibile sapere se c'e' un problema finchè non invio qls ( non è connesso!)
         # Ci pensa sendDatagradm ad impostare il timeout
@@ -146,6 +141,17 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
 
         self.start_tout(CtrlUnitDatagramProtocol.ERR_NO_SERVER_FOUND, "Connection and datagram send")
 
+    def got_ip(self, ip):
+
+        # Per prima cosa elimino il timeout se presente
+        self.clear_tout()
+
+        print "2. Got IP"
+
+        print "  IP of '{0}' is {1}".format(self.server_address, ip)
+
+        self.connect_and_send(ip)
+
     def no_ip(self, failure):
 
         print "2. Unable to resolve server {0}".format(failure)
@@ -165,10 +171,13 @@ class CtrlUnitDatagramProtocol(DatagramProtocol):
 
         print "1. Start protocol"
 
-        # Come prima cosa risolvo il nome
-        # TODO: devo unserire una cache nella risoluzione
-        reactor.resolve(self.server_address).addCallbacks(self.got_ip, self.no_ip)
-        self.start_tout(CtrlUnitDatagramProtocol.ERR_NO_DNS_RESOLUTION, "IP resolution")
+        # Come prima cosa risolvo il nome, se necessario
+        if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$', self.server_address):
+            self.connect_and_send(self.server_address)
+        else:
+            # TODO: devo unserire una cache nella risoluzione
+            reactor.resolve(self.server_address).addCallbacks(self.got_ip, self.no_ip)
+            self.start_tout(CtrlUnitDatagramProtocol.ERR_NO_DNS_RESOLUTION, "IP resolution")
 
     def stop_try(self, exit_code):
 
